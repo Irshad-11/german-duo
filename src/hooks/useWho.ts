@@ -1,21 +1,21 @@
 import { useMemo } from 'react';
 import { useAuth } from './useAuth';
 import { useLearners } from '@/api/queries';
-import type { Learner } from '@/types/db';
+import type { Accent, Learner } from '@/types/db';
 
-/** "me" vs "partner" resolution for the two-learner model. */
+/** Two learners, always shown by name/code (IR, LA) — the app never talks about "mine" vs "theirs". `me` is only used to know who is acting. */
 export function useWho() {
   const { me } = useAuth();
   const { data } = useLearners();
   return useMemo(() => {
-    const learners: Learner[] = data ?? (me ? [me] : []);
-    const partner = learners.find((l) => l.id !== me?.id) ?? null;
+    const learners: Learner[] = (data ?? (me ? [me] : [])).slice().sort((a, b) => a.code.localeCompare(b.code));
     const byId = new Map(learners.map((l) => [l.id, l]));
     return {
-      me, partner, learners, byId,
-      nameOf: (id: string | null | undefined) => (id ? (id === me?.id ? 'You' : byId.get(id)?.display_name ?? 'Partner') : 'Shared'),
+      me, learners, byId,
+      other: learners.find((l) => l.id !== me?.id) ?? null,
+      nameOf: (id: string | null | undefined) => (id ? byId.get(id)?.display_name ?? 'Someone' : '—'),
       codeOf: (id: string | null | undefined) => (id ? byId.get(id)?.code ?? '··' : '··'),
-      accentOf: (id: string | null | undefined): 'cobalt' | 'teal' | 'amber' => (id ? byId.get(id)?.accent ?? 'cobalt' : 'amber'),
+      accentOf: (id: string | null | undefined): Accent => (id ? byId.get(id)?.accent ?? 'blue' : 'blue'),
     };
   }, [data, me]);
 }

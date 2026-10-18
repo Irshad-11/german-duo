@@ -14,7 +14,7 @@ interface Pending { id: string; body: string; created_at: string; status: 'sendi
 const DRAFT_KEY = 'gd-draft-chat';
 
 export default function ChatPage() {
-  const { me, partner } = useWho();
+  const { me, other } = useWho();
   const qc = useQueryClient();
   const live = useLiveStatus();
   const msgs = useMessages();
@@ -59,7 +59,7 @@ export default function ChatPage() {
   let lastDay = '';
   return (
     <div className="chat">
-      <div className="chat-list" ref={listRef} role="log" aria-live="polite" aria-label={`Conversation with ${partner?.display_name ?? 'your partner'}`}>
+      <div className="chat-list" ref={listRef} role="log" aria-live="polite" aria-label={`Conversation with ${other?.display_name ?? 'the other learner'}`}>
         {items.length === 0 && <EmptyState title="Say hallo!">Messages stay in the app and sync instantly between your devices.</EmptyState>}
         {items.map((m) => {
           const mineMsg = m.sender_id === me?.id; const day = toISO(new Date(m.created_at)); const sep = day !== lastDay; lastDay = day;

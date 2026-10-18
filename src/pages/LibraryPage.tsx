@@ -3,9 +3,8 @@ import { ExternalLink, FileImage, FileText, Link2, Pencil, Plus, Search, Trash2 
 import { useCurriculum, useGoalResources, useGoals, usePlan, useResources } from '@/api/queries';
 import { addCurriculumItem, addGoalResource, createResource, deleteCurriculumItem, deleteResource, updateCurriculumItem, updateResource } from '@/api/mutations';
 import { useRun } from '@/hooks/useRun';
-import { useWho } from '@/hooks/useWho';
-import { Badge, Button, Card, Chip, ConfirmDialog, Dialog, EmptyState, ErrorState, Field, Input, Segmented, Select, SkeletonCards, Textarea } from '@/components/ui/ui';
-import { FolderTag } from '@/components/resource';
+import { Badge, Button, Chip, ConfirmDialog, Dialog, EmptyState, ErrorState, Field, Input, Segmented, Select, SkeletonCards, Textarea } from '@/components/ui/ui';
+import { FolderTag } from '@/components/people';
 import { filterResources, LibraryPicker } from '@/components/LibraryPicker';
 import { CATEGORIES, LEVELS, categoryLabel, formatSize } from '@/lib/domain/folders';
 import { checkResourceUrl } from '@/lib/domain/links';
@@ -45,8 +44,8 @@ export default function LibraryPage() {
             <div className="chips" role="group" aria-label="Level">{LEVELS.map((l) => <Chip key={l} on={level === l} onClick={() => setLevel(level === l ? null : l)}>{l}</Chip>)}</div>
             <Select aria-label="Category" value={cat} onChange={(e) => setCat(e.target.value)}><option value="">All categories</option>{CATEGORIES.map((c) => <option key={c} value={c}>{categoryLabel(c)}</option>)}</Select>
           </div>
-          {grouped.length === 0 ? <Card><EmptyState title="No files match">Change the search or clear the filters.</EmptyState></Card> : grouped.map(([folder, items]) => (
-            <Card key={folder}>
+          {grouped.length === 0 ? <div><EmptyState title="No files match">Change the search or clear the filters.</EmptyState></div> : grouped.map(([folder, items]) => (
+            <section key={folder} className="panel">
               <h2 className="folder-h"><FolderTag level={items[0].level} folder={folder} /> <span className="muted small">{items.length} file{items.length > 1 ? 's' : ''}</span></h2>
               <ul className="plain-list file-list">
                 {items.map((r) => {
@@ -67,7 +66,7 @@ export default function LibraryPage() {
                     </li>);
                 })}
               </ul>
-            </Card>
+            </section>
           ))}
         </>
       )}
@@ -143,9 +142,9 @@ function AddToGoalDialog({ r, onClose }: { r: Resource | null; onClose: () => vo
   return <Dialog open={!!r} onClose={onClose} title="Add to a weekly goal">{r && <AddToGoalBody r={r} onClose={onClose} />}</Dialog>;
 }
 function AddToGoalBody({ r, onClose }: { r: Resource; onClose: () => void }) {
-  const run = useRun(); const { me } = useWho();
+  const run = useRun();
   const { data: goals } = useGoals(); const { data: rs } = useGoalResources();
-  const open = useMemo(() => (goals ?? []).filter((g) => (g.scope === 'shared' || g.owner_id === me?.id) && g.status !== 'completed' && g.status !== 'dropped').sort((a, b) => a.deadline.localeCompare(b.deadline)), [goals, me?.id]);
+  const open = useMemo(() => (goals ?? []).filter((g) => g.status === 'active').sort((a, b) => a.deadline.localeCompare(b.deadline)), [goals]);
   const [goalId, setGoalId] = useState(open[0]?.id ?? '');
   const d = draftFromResource(r);
   const [start, setStart] = useState(d.start); const [end, setEnd] = useState(d.end); const [min, setMin] = useState('');
@@ -154,7 +153,7 @@ function AddToGoalBody({ r, onClose }: { r: Resource; onClose: () => void }) {
     if (err || !goalId) return;
     const pos = (rs ?? []).filter((x) => x.goal_id === goalId).length;
     const out = await run(() => addGoalResource(goalId, { resource_id: r.id, title: r.title, filename: r.filename, level: r.level === 'ALL' ? null : r.level, category: r.category, source_folder: r.source_folder, file_type: r.file_type,
-      page_count: r.page_count, start_page: start ? Number(start) : null, end_page: end ? Number(end) : null, external_url: r.external_url, est_minutes: min ? Number(min) : null }, pos), { ok: 'Added to the goal', invalidate: ['goal_resources'] });
+      page_count: r.page_count, start_page: start ? Number(start) : null, end_page: end ? Number(end) : null, external_url: r.external_url, est_minutes: min ? Number(min) : null }, pos), { ok: 'Added to the goal', invalidate: ['goal_resources', 'change_log'] });
     if (out.ok) onClose();
   }
   return (
@@ -162,7 +161,7 @@ function AddToGoalBody({ r, onClose }: { r: Resource; onClose: () => void }) {
       <FolderTag level={r.level} folder={r.source_folder} category={r.category} /><p><b>{r.title}</b>{r.page_count ? <span className="muted"> · {r.page_count} pages</span> : null}</p>
       {open.length === 0 ? <EmptyState title="No open goals">Create a weekly goal in Plan first, then add this file to it.</EmptyState> : (
         <>
-          <Field label="Goal" htmlFor="at-g"><Select id="at-g" value={goalId} onChange={(e) => setGoalId(e.target.value)}>{open.map((g) => <option key={g.id} value={g.id}>{g.title} — due {formatDay(g.deadline)}{g.scope === 'shared' ? ' (shared)' : ''}</option>)}</Select></Field>
+          <Field label="Goal" htmlFor="at-g"><Select id="at-g" value={goalId} onChange={(e) => setGoalId(e.target.value)}>{open.map((g) => <option key={g.id} value={g.id}>{g.title} — due {formatDay(g.deadline)}</option>)}</Select></Field>
           <div className="grid3">
             <Field label="First page" htmlFor="at-s" error={err}><Input id="at-s" type="number" min={1} value={start} onChange={(e) => setStart(e.target.value)} /></Field>
             <Field label="Last page" htmlFor="at-e"><Input id="at-e" type="number" min={1} value={end} onChange={(e) => setEnd(e.target.value)} /></Field>
@@ -194,7 +193,7 @@ function CurriculumTab({ planStart }: { planStart: string | null }) {
       {weeks.map((w) => {
         const items = data.items.filter((i) => i.week_no === w.week_no);
         return (
-          <Card key={w.week_no} className={nowWeek === w.week_no ? 'card-now' : ''}>
+          <section key={w.week_no} className={`panel ${nowWeek === w.week_no ? 'card-now' : ''}`}>
             <div className="row between wrap"><h2><Badge>{w.level}</Badge> Week {w.week_no}: {w.theme}</h2>{nowWeek === w.week_no && <Badge tone="info">this week</Badge>}</div>
             {w.goal && <p className="muted small">{w.goal}</p>}
             <ul className="plain-list stack-sm">
@@ -208,7 +207,7 @@ function CurriculumTab({ planStart }: { planStart: string | null }) {
             </ul>
             <Button size="sm" icon={<Plus size={14} aria-hidden />} onClick={() => setPicker(w.week_no)}>Add file to this week</Button>
             {planStart && <p className="small muted">Starts {formatDay(toISO(startOfWeek(new Date(new Date(planStart).getTime() + (w.week_no - 1) * 7 * 86400000))))} on the current plan.</p>}
-          </Card>);
+          </section>);
       })}
       <CurriculumItemDialog item={editing} resource={editing ? byPath.get(editing.resource_path) ?? null : null} onClose={() => setEditing(null)} />
       <LibraryPicker open={picker !== null} onClose={() => setPicker(null)} onPick={(r) => {

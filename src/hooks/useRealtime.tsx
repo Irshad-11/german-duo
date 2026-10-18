@@ -8,11 +8,9 @@ const Ctx = createContext<LiveStatus>('connecting');
 
 /** table -> query keys that must be refetched when a row changes (RLS already filters what each learner receives). */
 export const TABLE_KEYS: Record<string, string[]> = {
-  plans: ['plan'], resources: ['resources'], curriculum_items: ['curriculum'], goals: ['goals'], goal_resources: ['goal_resources'],
-  study_sessions: ['sessions'], activity_log: ['activity'], postponement_requests: ['postponements', 'goals'], goal_deadline_history: ['deadline_history'],
-  resource_status_history: ['status_history'], vocab_words: ['vocab'], vocab_review_log: ['vocab_log'], vocab_favorites: ['vocab_fav'],
-  vocab_annotations: ['vocab_ann'], vocab_review_state: ['vocab_state'], notes: ['notes'], note_replies: ['replies'], messages: ['messages'],
-  announcements: ['announcements'], announcement_reads: ['ann_reads'], notifications: ['notifications'],
+  learners: ['learners'], plans: ['plan'], resources: ['resources'], curriculum_items: ['curriculum'], goals: ['goals'], goal_resources: ['goal_resources'], goal_progress: ['goal_progress'],
+  study_sessions: ['sessions'], change_log: ['change_log'], postponement_requests: ['postponements', 'goals'], vocab_words: ['vocab'], vocab_review_log: ['vocab_log'],
+  vocab_review_state: ['vocab_state'], notes: ['notes'], note_replies: ['replies'], messages: ['messages'], announcements: ['announcements'], announcement_reads: ['ann_reads'], tab_seen: ['tab_seen'],
 };
 
 export function RealtimeProvider({ children }: { children: ReactNode }) {

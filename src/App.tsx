@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, type ReactNode } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider, useAuth } from '@/hooks/useAuth';
@@ -18,6 +18,7 @@ import type { ThemePref } from '@/types/db';
 const Dashboard = lazy(() => import('@/pages/DashboardPage'));
 const Plan = lazy(() => import('@/pages/PlanPage'));
 const LibraryPage = lazy(() => import('@/pages/LibraryPage'));
+const Log = lazy(() => import('@/pages/LogPage'));
 const Words = lazy(() => import('@/pages/WordsPage'));
 const Notes = lazy(() => import('@/pages/NotesPage'));
 const Chat = lazy(() => import('@/pages/ChatPage'));
@@ -48,7 +49,13 @@ function AdoptProfileTheme() {
 
 function Gate() {
   const { status } = useAuth();
-  if (status === 'loading') return <Splash />;
+  const [min, setMin] = useState(false); const [gone, setGone] = useState(false);
+  useEffect(() => {
+    const reduce = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    const t = window.setTimeout(() => setMin(true), reduce ? 500 : 1700); return () => window.clearTimeout(t);
+  }, []);
+  useEffect(() => { if (!min || status === 'loading') return; const t = window.setTimeout(() => setGone(true), 400); return () => window.clearTimeout(t); }, [min, status]);
+  if (!gone) return <Splash leaving={min && status !== 'loading'} />;
   if (status === 'signedOut') return <LoginPage />;
   return (
     <RealtimeProvider>
@@ -63,6 +70,7 @@ function Gate() {
               <Route path="notes" element={<Notes />} />
               <Route path="chat" element={<Chat />} />
               <Route path="notices" element={<Notices />} />
+              <Route path="log" element={<Log />} />
               <Route path="settings" element={<SettingsPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>

@@ -66,10 +66,10 @@ export const Textarea = forwardRef<HTMLTextAreaElement, TextareaHTMLAttributes<H
 export const Select = forwardRef<HTMLSelectElement, SelectHTMLAttributes<HTMLSelectElement>>(function Select({ className, children, ...rest }, ref) { return <select ref={ref} className={cx('input select', className)} {...rest}>{children}</select>; });
 
 /* ---------- display ---------- */
-export function Badge({ tone = 'neutral', children, icon }: { tone?: 'neutral' | 'info' | 'active' | 'warn' | 'done' | 'help' | 'cobalt' | 'teal' | 'amber'; children: ReactNode; icon?: ReactNode }) {
+export function Badge({ tone = 'neutral', children, icon }: { tone?: 'neutral' | 'info' | 'active' | 'warn' | 'done' | 'help' | 'blue' | 'orange'; children: ReactNode; icon?: ReactNode }) {
   return <span className={cx('badge', `badge-${tone}`)}>{icon}{children}</span>;
 }
-export function ProgressBar({ value, label, tone = 'accent', indeterminate }: { value: number | null; label: string; tone?: 'accent' | 'cobalt' | 'teal' | 'amber' | 'done'; indeterminate?: boolean }) {
+export function ProgressBar({ value, label, tone = 'accent', indeterminate }: { value: number | null; label: string; tone?: 'accent' | 'blue' | 'orange' | 'done'; indeterminate?: boolean }) {
   const v = value === null ? 0 : Math.min(100, Math.max(0, value));
   return (
     <div className={cx('bar', `bar-${tone}`, indeterminate && 'bar-unknown')} role="progressbar" aria-label={label} aria-valuemin={0} aria-valuemax={100} aria-valuenow={value === null ? undefined : v} aria-valuetext={value === null ? 'unknown' : `${v}%`}>
@@ -77,20 +77,9 @@ export function ProgressBar({ value, label, tone = 'accent', indeterminate }: { 
     </div>
   );
 }
-export function Ring({ value, size = 64, stroke = 7, tone = 'accent', children, label }: { value: number; size?: number; stroke?: number; tone?: 'cobalt' | 'teal' | 'amber' | 'accent'; children?: ReactNode; label: string }) {
-  const v = Math.min(100, Math.max(0, value)); const r = (size - stroke) / 2; const c = 2 * Math.PI * r;
-  return (
-    <div className={cx('ring', `ring-${tone}`)} style={{ width: size, height: size }} role="img" aria-label={`${label}: ${v}%`}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden>
-        <circle cx={size / 2} cy={size / 2} r={r} className="ring-track" strokeWidth={stroke} fill="none" />
-        <circle cx={size / 2} cy={size / 2} r={r} className="ring-fill" strokeWidth={stroke} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - v / 100)} transform={`rotate(-90 ${size / 2} ${size / 2})`} />
-      </svg>
-      <div className="ring-center">{children ?? <b>{v}%</b>}</div>
-    </div>
-  );
-}
-export function Avatar({ code, accent, size = 32, label }: { code: string; accent: 'cobalt' | 'teal' | 'amber'; size?: number; label?: string }) {
-  return <span className={cx('avatar', `avatar-${accent}`)} style={{ width: size, height: size, fontSize: size * 0.4 }} role="img" aria-label={label ?? code}>{code}</span>;
+/** A person is always shown as a marker + code: ● (IR, blue) and ■ (LA, orange). The shape differs so colour is never the only cue. */
+export function Avatar({ code, accent, size = 18, label }: { code: string; accent: 'blue' | 'orange'; size?: number; label?: string }) {
+  return <span className={cx('person', `person-${accent}`)} style={{ fontSize: size * 0.7 }} role="img" aria-label={label ?? code}><i className="mk" aria-hidden />{code}</span>;
 }
 export function Skeleton({ h = 16, w = '100%', r = 8 }: { h?: number; w?: number | string; r?: number }) { return <span className="skeleton" style={{ height: h, width: w, borderRadius: r }} aria-hidden />; }
 export function SkeletonCards({ n = 3 }: { n?: number }) {
@@ -122,3 +111,12 @@ export function Chip({ children, on, onClick, onRemove }: { children: ReactNode;
   return <button type="button" className={cx('chip', on && 'chip-on')} aria-pressed={on} onClick={onClick}>{children}</button>;
 }
 export function VisuallyHidden({ children }: { children: ReactNode }) { return <span className="sr-only">{children}</span>; }
+
+export function Dot({ n }: { n?: number }) { return n ? <span className="dotc" aria-label={`${n} new`}>{n > 99 ? '99+' : n}</span> : null; }
+export function Tabs<T extends string>({ value, onChange, tabs, label }: { value: T; onChange: (v: T) => void; tabs: Array<{ value: T; label: ReactNode; dot?: number }>; label: string }) {
+  return (
+    <div className="tabs" role="tablist" aria-label={label}>
+      {tabs.map((t) => <button key={t.value} role="tab" aria-selected={value === t.value} className={cx('tabs-item', value === t.value && 'on')} onClick={() => onChange(t.value)}>{t.label}<Dot n={t.dot} /></button>)}
+    </div>
+  );
+}

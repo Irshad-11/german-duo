@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/useToast';
 import { useRun } from '@/hooks/useRun';
 import { usePlan } from '@/api/queries';
 import { replacePlan, rotateAccessKey, updatePlan, updateProfile } from '@/api/mutations';
-import { Button, Card, ConfirmDialog, Dialog, Field, Input, SectionHeader, Segmented, Textarea } from '@/components/ui/ui';
+import { Button, ConfirmDialog, Dialog, Field, Input, SectionHeader, Segmented, Textarea } from '@/components/ui/ui';
 import { newKeySchema } from '@/lib/validation';
 import { addDays, formatDay, parseISO, toISO } from '@/lib/domain/dates';
 import type { Plan, ThemePref } from '@/types/db';
@@ -35,19 +35,19 @@ export default function SettingsPage() {
   return (
     <div className="stack-lg narrow">
       <h1>Settings</h1>
-      <Card>
+      <section className="panel">
         <SectionHeader title="Profile" />
         <Field label="Display name" htmlFor="st-name"><div className="row"><Input id="st-name" value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
           <Button disabled={!name.trim() || name.trim() === me.display_name} onClick={() => void run(async () => { await updateProfile(me.id, { display_name: name.trim() }); await refreshMe(); }, { ok: 'Name saved', invalidate: ['learners'] })}>Save</Button></div></Field>
-        <p className="small muted">Your learner code is <b>{me.code}</b>. It identifies you everywhere in the app.</p>
-      </Card>
+        <p className="small muted">Learner code: <b>{me.code}</b>. It marks every change in the log.</p>
+      </section>
 
-      <Card>
-        <SectionHeader title="Appearance" sub="Saved to your profile, so it follows you to your other devices." />
+      <section className="panel">
+        <SectionHeader title="Appearance" sub="Saved with the profile, so it follows to other devices." />
         <Segmented<ThemePref> label="Theme" value={pref} onChange={(v) => setPref(v)} options={[{ value: 'system', label: <><Monitor size={15} aria-hidden /> System</> }, { value: 'light', label: <><Sun size={15} aria-hidden /> Light</> }, { value: 'dark', label: <><Moon size={15} aria-hidden /> Dark</> }]} />
-      </Card>
+      </section>
 
-      <Card>
+      <section className="panel">
         <SectionHeader title="Learning plan" sub="The first target is 365 days — not a hard stop." />
         {p ? (
           <>
@@ -56,34 +56,34 @@ export default function SettingsPage() {
             <p className="small muted">Starting a new plan keeps the old one in the history. Existing goals stay as they are.</p>
           </>
         ) : <><p className="muted">No active plan.</p><Button variant="primary" onClick={() => setPlanDlg('new')}>Create a plan</Button></>}
-      </Card>
+      </section>
 
-      <Card>
-        <SectionHeader title="Access key" sub="Your key signs you in. Change it if someone else might know it." />
+      <section className="panel">
+        <SectionHeader title="Access key" sub="The key signs in. Change it if someone else might know it." />
         <form className="stack" onSubmit={handleSubmit(changeKey)} noValidate>
           <Field label="Current key" htmlFor="k-cur" error={errors.current?.message}><Input id="k-cur" type="password" autoComplete="current-password" {...register('current')} /></Field>
-          <Field label="New key" htmlFor="k-new" error={errors.next?.message} hint="At least 8 characters. Keep it different from your partner’s key."><Input id="k-new" type="password" autoComplete="new-password" {...register('next')} /></Field>
+          <Field label="New key" htmlFor="k-new" error={errors.next?.message} hint="At least 8 characters. Keep it different from the other learner’s key."><Input id="k-new" type="password" autoComplete="new-password" {...register('next')} /></Field>
           <Field label="Repeat new key" htmlFor="k-conf" error={errors.confirm?.message}><Input id="k-conf" type="password" autoComplete="new-password" {...register('confirm')} /></Field>
           <div><Button type="submit" busy={isSubmitting} icon={<KeyRound size={16} aria-hidden />}>Change access key</Button></div>
         </form>
-      </Card>
+      </section>
 
-      <Card>
+      <section className="panel">
         <SectionHeader title="Session" />
         <Button icon={<LogOut size={16} aria-hidden />} onClick={() => void signOut()}>Sign out</Button>
         <p className="small muted">You stay signed in on this device until you sign out or the session expires.</p>
-      </Card>
+      </section>
 
-      <Card>
+      <section className="panel">
         <SectionHeader title="About this app" />
         <ul className="small muted bullets">
-          <li>Everything you see is stored in your Supabase database; this device only keeps theme, an unsent chat draft and a running timer.</li>
+          <li>Everything is stored in the Supabase database; this device only keeps the theme, an unsent chat draft and a running timer.</li><li>Every change is in the Log and can be reverted.</li>
           <li>“Timer” sessions measure time since you pressed Start — they cannot prove you were reading. Self-reported minutes are labelled as such.</li>
           <li>The curriculum was proposed from file names and page counts. PDF contents were not read.</li>
           <li>Links to Google Drive are checked for shape only; whether a file is shared with you is up to Drive.</li>
         </ul>
         <Button variant="ghost" size="sm" onClick={() => void qc.invalidateQueries()}>Refresh all data</Button>
-      </Card>
+      </section>
 
       <ConfirmDialog open={extendBy !== null} title="Extend the plan?" confirmLabel="Extend" onCancel={() => setExtendBy(null)}
         message={p && extendBy ? `The target end moves from ${formatDay(p.target_end_date)} to ${formatDay(toISO(addDays(parseISO(p.target_end_date), extendBy * 7)))}.` : ''}

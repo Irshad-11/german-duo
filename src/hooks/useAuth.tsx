@@ -3,6 +3,7 @@ import type { Session } from '@supabase/supabase-js';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { LEARNER_EMAILS } from '@/lib/learners';
+import { touchSession } from '@/api/mutations';
 import type { Learner } from '@/types/db';
 
 export type SignInResult = { ok: true } | { ok: false; reason: 'invalid' | 'rate_limited' | 'network' | 'server' | 'not_learner' };
@@ -42,6 +43,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(null); setMe(null); setStatus('signedOut'); return;
       }
       setSession(s); setMe(learner); setStatus('signedIn');
+      void touchSession(false).catch(() => undefined);
     } catch {
       // Could not load the profile (offline?). Keep the session; show the app shell with retry via refreshMe.
       setSession(s); setStatus('signedIn');
@@ -69,7 +71,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     for (const email of LEARNER_EMAILS) {
       try {
         const { error } = await supabase.auth.signInWithPassword({ email, password: key.trim() });
-        if (!error) { setNotice(null); return { ok: true }; }
+        if (!error) { setNotice(null); void touchSession(true).catch(() => undefined); return { ok: true }; }
         if (error.status === 429 || /rate limit/i.test(error.message)) sawRateLimit = true;
         else if (/failed to fetch|network/i.test(error.message)) sawNetwork = true;
       } catch { sawNetwork = true; }

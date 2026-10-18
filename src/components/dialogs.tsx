@@ -1,12 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Lock, Users } from 'lucide-react';
-import { Badge, Button, Chip, Dialog, Field, Input, Segmented, Select, Textarea } from '@/components/ui/ui';
-import { addWord, createNote, logSession, saveAnnotation, updateWord, type WordInput } from '@/api/mutations';
-import { useGoalResources, useGoals, useVocab, useVocabAnn } from '@/api/queries';
+import { Button, Chip, Dialog, Field, Input, Segmented, Select, Textarea } from '@/components/ui/ui';
+import { addWord, createNote, logSession, updateWord, type WordInput } from '@/api/mutations';
+import { useGoalResources, useGoals, useVocab } from '@/api/queries';
 import { useRun } from '@/hooks/useRun';
-import { useWho } from '@/hooks/useWho';
 import { WORD_TYPES, noteSchema, sessionSchema, wordSchema } from '@/lib/validation';
 import type { NoteKind, VocabWord, WordType } from '@/types/db';
 import { z } from 'zod';
@@ -25,12 +23,12 @@ const DETAIL_FIELDS: Partial<Record<WordType, Array<{ key: string; label: string
   adjective: [{ key: 'komparativ', label: 'Komparativ', placeholder: 'schöner' }, { key: 'superlativ', label: 'Superlativ', placeholder: 'am schönsten' }],
 };
 
-function defaults(w: VocabWord | null, seed?: string, private_note = ''): WordForm {
+function defaults(w: VocabWord | null, seed?: string): WordForm {
   return {
     german: w?.german ?? seed ?? '', word_type: w?.word_type ?? 'noun', article: w?.article ?? '', plural: w?.plural ?? '', meaning_en: w?.meaning_en ?? '', meaning_bn: w?.meaning_bn ?? '',
     pronunciation: w?.pronunciation ?? '', pronunciation_verified: w?.pronunciation_verified ?? false, translation_verified: w?.translation_verified ?? false,
     example_de: w?.example_de ?? '', example_en: w?.example_en ?? '', example_bn: w?.example_bn ?? '', tags: (w?.topic_tags ?? []).join(', '), level: w?.level ?? '', source: w?.source ?? '',
-    details: w?.details ?? {}, private_note,
+    details: w?.details ?? {}, private_note: w?.note ?? '',
   };
 }
 const parseTags = (s: string): string[] => [...new Set(s.split(/[,#\n]/).map((t) => t.trim().toLowerCase()).filter(Boolean))].slice(0, 12);
@@ -41,11 +39,8 @@ export function WordDialog({ open, word, seed, onClose }: { open: boolean; word:
 
 function WordFormBody({ word, seed, onClose }: { word: VocabWord | null; seed?: string; onClose: () => void }) {
   const run = useRun();
-  const who = useWho();
   const { data: all } = useVocab();
-  const { data: anns } = useVocabAnn();
-  const existingNote = anns?.find((a) => a.word_id === word?.id)?.note ?? '';
-  const form = useForm<WordForm>({ resolver: zodResolver(wordSchema), defaultValues: defaults(word, seed, existingNote), mode: 'onTouched' });
+  const form = useForm<WordForm>({ resolver: zodResolver(wordSchema), defaultValues: defaults(word, seed), mode: 'onTouched' });
   const { register, handleSubmit, watch, control, setValue, formState: { errors, isSubmitting } } = form;
   const type = watch('word_type'); const german = watch('german'); const article = watch('article');
   useEffect(() => { if (type !== 'noun') { setValue('article', ''); setValue('plural', ''); } }, [type, setValue]);
@@ -68,12 +63,9 @@ function WordFormBody({ word, seed, onClose }: { word: VocabWord | null; seed?: 
       meaning_en: v.meaning_en || null, meaning_bn: v.meaning_bn || null, pronunciation: v.pronunciation || null,
       pronunciation_verified: v.pronunciation ? v.pronunciation_verified : false, translation_verified: v.translation_verified,
       example_de: v.example_de || null, example_en: v.example_en || null, example_bn: v.example_bn || null, topic_tags: parseTags(v.tags),
-      level: v.level === '' ? null : v.level, source: v.source || null, source_resource_id: word?.source_resource_id ?? null,
+      level: v.level === '' ? null : v.level, source: v.source || null, starred: word?.starred ?? false, note: v.private_note.trim() || null,
     };
-    const res = await run(async () => {
-      const id = word ? (await updateWord(word.id, input), word.id) : await addWord(input);
-      if (who.me && (v.private_note.trim() || existingNote)) await saveAnnotation(who.me.id, id, v.private_note);
-    }, { ok: word ? 'Word updated' : 'Word added for both of you', invalidate: ['vocab', 'vocab_ann'] });
+    const res = await run(() => (word ? updateWord(word.id, input) : addWord(input)), { ok: word ? 'Word updated' : 'Word added', invalidate: ['vocab', 'change_log'], undo: word ? { table: 'vocab_words', op: 'UPDATE', rowId: word.id } : { table: 'vocab_words', op: 'INSERT', fromResult: (id: unknown) => String(id) } });
     if (res.ok) onClose();
   }
 
@@ -116,7 +108,7 @@ function WordFormBody({ word, seed, onClose }: { word: VocabWord | null; seed?: 
       </div>
       <label className="check"><input type="checkbox" {...register('translation_verified')} /> I checked these meanings in a dictionary or with a teacher</label>
 
-      <Field label="Pronunciation guide (optional)" htmlFor="w-pr" hint="Your own guide, e.g. “TISH”. It is shown as unverified unless you tick the box.">
+      <Field label="Pronunciation guide (optional)" htmlFor="w-pr" hint="A guide written by hand, e.g. “TISH”. It is shown as unverified unless you tick the box.">
         <Input id="w-pr" autoComplete="off" {...register('pronunciation')} />
       </Field>
       <label className="check"><input type="checkbox" {...register('pronunciation_verified')} /> I verified this pronunciation</label>
@@ -132,7 +124,7 @@ function WordFormBody({ word, seed, onClose }: { word: VocabWord | null; seed?: 
         <Field label="Level" htmlFor="w-lvl"><Select id="w-lvl" {...register('level')}><option value="">Not set</option>{['A1', 'A2', 'B1', 'B2', 'C1', 'C2'].map((l) => <option key={l}>{l}</option>)}</Select></Field>
       </div>
       <Field label="Source (optional)" htmlFor="w-src" hint="Book, page, lesson…"><Input id="w-src" autoComplete="off" {...register('source')} /></Field>
-      <Field label="Your private note" htmlFor="w-pn" hint={<><Lock size={12} aria-hidden /> Only you can see this.</>}><Textarea id="w-pn" rows={2} {...register('private_note')} /></Field>
+      <Field label="Note (shared)" htmlFor="w-pn"><Textarea id="w-pn" rows={2} {...register('private_note')} /></Field>
 
       <div className="dialog-actions">
         <Button onClick={onClose}>Cancel</Button>
@@ -145,7 +137,7 @@ function WordFormBody({ word, seed, onClose }: { word: VocabWord | null; seed?: 
 /* ======================= QUICK NOTE ======================= */
 export const NOTE_KINDS: Array<{ value: NoteKind; label: string; hint: string }> = [
   { value: 'note', label: 'Note', hint: 'Anything worth keeping' }, { value: 'word', label: 'Word', hint: 'A word to look up or add' },
-  { value: 'grammar', label: 'Grammar rule', hint: 'A rule or pattern' }, { value: 'question', label: 'Question', hint: 'Ask your partner' },
+  { value: 'grammar', label: 'Grammar rule', hint: 'A rule or pattern' }, { value: 'question', label: 'Question', hint: 'Ask the other learner' },
   { value: 'confusing', label: 'Confusing', hint: 'A sentence you do not get' }, { value: 'reminder', label: 'Revise later', hint: 'A reminder to review' },
 ];
 
@@ -154,25 +146,17 @@ export function QuickNoteDialog({ open, onClose, kind = 'note' }: { open: boolea
 }
 function QuickNoteBody({ onClose, initialKind }: { onClose: () => void; initialKind: NoteKind }) {
   const run = useRun();
-  const [kind, setKind] = useState<NoteKind>(initialKind);
-  const [shared, setShared] = useState(initialKind === 'question');
-  const [body, setBody] = useState('');
-  const [err, setErr] = useState<string | null>(null);
-  useEffect(() => { if (kind === 'question') setShared(true); }, [kind]);
+  const [kind, setKind] = useState<NoteKind>(initialKind); const [body, setBody] = useState(''); const [err, setErr] = useState<string | null>(null);
   async function save() {
     const parsed = noteSchema.safeParse({ body, title: '' });
     if (!parsed.success) { setErr(parsed.error.issues[0].message); return; }
-    const res = await run(() => createNote({ visibility: shared ? 'shared' : 'private', kind, body: parsed.data.body, question_state: kind === 'question' ? 'open' : null }), { ok: shared ? 'Saved and shared' : 'Saved privately', invalidate: ['notes'] });
+    const res = await run(() => createNote({ kind, body: parsed.data.body, question_state: kind === 'question' ? 'open' : null }), { ok: 'Note saved', invalidate: ['notes', 'change_log'], undo: { table: 'notes', op: 'INSERT', fromResult: (id: string) => id } });
     if (res.ok) onClose();
   }
   return (
     <div className="stack">
       <div className="chips" role="group" aria-label="Kind of note">{NOTE_KINDS.map((k) => <Chip key={k.value} on={kind === k.value} onClick={() => setKind(k.value)}>{k.label}</Chip>)}</div>
-      <Field label={NOTE_KINDS.find((k) => k.value === kind)?.hint ?? 'Note'} htmlFor="qn-body" error={err}>
-        <Textarea id="qn-body" rows={4} autoFocus value={body} onChange={(e) => { setBody(e.target.value); setErr(null); }} />
-      </Field>
-      <Segmented label="Who can see it" value={shared ? 'shared' : 'private'} onChange={(v) => setShared(v === 'shared')}
-        options={[{ value: 'private', label: <><Lock size={14} aria-hidden /> Just me</> }, { value: 'shared', label: <><Users size={14} aria-hidden /> Both of us</> }]} />
+      <Field label={NOTE_KINDS.find((k) => k.value === kind)?.hint ?? 'Note'} htmlFor="qn-body" error={err}><Textarea id="qn-body" rows={4} autoFocus value={body} onChange={(e) => { setBody(e.target.value); setErr(null); }} /></Field>
       <div className="dialog-actions"><Button onClick={onClose}>Cancel</Button><Button variant="primary" onClick={() => void save()}>Save note</Button></div>
     </div>
   );
@@ -184,44 +168,24 @@ export function LogSessionDialog({ open, onClose }: { open: boolean; onClose: ()
 }
 function LogSessionBody({ onClose }: { onClose: () => void }) {
   const run = useRun();
-  const { me } = useWho();
-  const { data: goals } = useGoals();
-  const { data: rs } = useGoalResources();
-  const mine = useMemo(() => {
-    const ok = new Set((goals ?? []).filter((g) => (g.scope === 'shared' || g.owner_id === me?.id) && g.status !== 'completed' && g.status !== 'dropped').map((g) => g.id));
-    return (rs ?? []).filter((r) => ok.has(r.goal_id) && r.status !== 'completed');
-  }, [goals, rs, me?.id]);
-  const [target, setTarget] = useState<string>('');
-  const [minutes, setMinutes] = useState('20');
-  const [note, setNote] = useState('');
-  const [interrupted, setInterrupted] = useState(false);
-  const [err, setErr] = useState<string | null>(null);
+  const { data: goals } = useGoals(); const { data: rs } = useGoalResources();
+  const mine = useMemo(() => { const ok = new Set((goals ?? []).filter((g) => g.status === 'active').map((g) => g.id)); return (rs ?? []).filter((r) => ok.has(r.goal_id)); }, [goals, rs]);
+  const [target, setTarget] = useState(''); const [minutes, setMinutes] = useState('20'); const [note, setNote] = useState(''); const [err, setErr] = useState<string | null>(null);
   async function save() {
     const parsed = sessionSchema.safeParse({ minutes: Number(minutes) });
     if (!parsed.success) { setErr(parsed.error.issues[0].message); return; }
     const r = mine.find((x) => x.id === target);
-    const res = await run(() => logSession({ minutes: parsed.data.minutes, source: 'manual', goal_id: r?.goal_id ?? null, goal_resource_id: r?.id ?? null, label: r?.title ?? 'General practice', note: note.trim() || null, interrupted }),
-      { ok: `Logged ${parsed.data.minutes} min`, invalidate: ['sessions', 'goal_resources'] });
+    const res = await run(() => logSession({ minutes: parsed.data.minutes, source: 'manual', goal_id: r?.goal_id ?? null, goal_resource_id: r?.id ?? null, label: r?.title ?? 'General practice', note: note.trim() || null }),
+      { ok: `Logged ${parsed.data.minutes} min`, invalidate: ['sessions', 'goal_progress', 'change_log'], undo: { table: 'study_sessions', op: 'INSERT', fromResult: (id: string) => id } });
     if (res.ok) onClose();
   }
   return (
     <div className="stack">
-      <Field label="What did you study?" htmlFor="ls-target">
-        <Select id="ls-target" value={target} onChange={(e) => setTarget(e.target.value)}>
-          <option value="">General practice (not linked to a file)</option>
-          {mine.map((r) => <option key={r.id} value={r.id}>{r.title}</option>)}
-        </Select>
-      </Field>
+      <Field label="What was studied?" htmlFor="ls-target"><Select id="ls-target" value={target} onChange={(e) => setTarget(e.target.value)}><option value="">General practice (not linked to a file)</option>{mine.map((r) => <option key={r.id} value={r.id}>{r.title}</option>)}</Select></Field>
       <Field label="Minutes" htmlFor="ls-min" error={err} hint="Self-reported. Use the timer on a file to measure elapsed time.">
-        <div className="row wrap">
-          <Input id="ls-min" className="input-sm" type="number" inputMode="numeric" min={1} max={720} value={minutes} onChange={(e) => { setMinutes(e.target.value); setErr(null); }} />
-          {[10, 20, 30, 45, 60].map((m) => <Chip key={m} on={minutes === String(m)} onClick={() => setMinutes(String(m))}>{m}</Chip>)}
-        </div>
-      </Field>
+        <div className="row wrap"><Input id="ls-min" className="input-sm" type="number" inputMode="numeric" min={1} max={720} value={minutes} onChange={(e) => { setMinutes(e.target.value); setErr(null); }} />{[10, 20, 30, 45, 60].map((m) => <Chip key={m} on={minutes === String(m)} onClick={() => setMinutes(String(m))}>{m}</Chip>)}</div></Field>
       <Field label="Note (optional)" htmlFor="ls-note"><Input id="ls-note" value={note} onChange={(e) => setNote(e.target.value)} /></Field>
-      <label className="check"><input type="checkbox" checked={interrupted} onChange={(e) => setInterrupted(e.target.checked)} /> I was interrupted</label>
       <div className="dialog-actions"><Button onClick={onClose}>Cancel</Button><Button variant="primary" onClick={() => void save()}>Log time</Button></div>
     </div>
   );
 }
-export { Badge };

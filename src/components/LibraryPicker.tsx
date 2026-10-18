@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Plus, Search } from 'lucide-react';
 import { Button, Chip, Dialog, EmptyState, Input, Select } from '@/components/ui/ui';
-import { FolderTag } from '@/components/resource';
+import { FolderTag } from '@/components/people';
 import { useResources } from '@/api/queries';
 import { CATEGORIES, LEVELS, categoryLabel, formatSize } from '@/lib/domain/folders';
 import type { Level, Resource } from '@/types/db';
@@ -18,7 +18,7 @@ export function LibraryPicker({ open, onClose, onPick }: { open: boolean; onClos
   const [added, setAdded] = useState(0);
   const list = useMemo(() => filterResources(data ?? [], q, level, cat).slice(0, 80), [data, q, level, cat]);
   return (
-    <Dialog open={open} onClose={onClose} title="Add from your library" wide footer={<><span className="muted small">{added ? `${added} added` : ''}</span><Button variant="primary" onClick={onClose}>Done</Button></>}>
+    <Dialog open={open} onClose={onClose} title="Add from the library" wide footer={<><span className="muted small">{added ? `${added} added` : ''}</span><Button variant="primary" onClick={onClose}>Done</Button></>}>
       <div className="stack-sm">
         <div className="search"><Search size={16} aria-hidden /><Input aria-label="Search files" placeholder="Search by title, file name or folder" value={q} onChange={(e) => setQ(e.target.value)} /></div>
         <div className="chips" role="group" aria-label="Level">{LEVELS.map((l) => <Chip key={l} on={level === l} onClick={() => setLevel(level === l ? null : l)}>{l}</Chip>)}</div>

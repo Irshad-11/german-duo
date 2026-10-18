@@ -1,14 +1,15 @@
-export function Splash({ label = 'Loading German Duo' }: { label?: string }) {
+/** Opening screen: a short phrase types out while two people (● and ■) walk toward each other and meet. Respects reduced motion. */
+export function Splash({ leaving }: { leaving?: boolean }) {
   return (
-    <div className="splash" role="status" aria-live="polite" aria-label={label}>
-      <svg className="splash-art" viewBox="0 0 220 120" aria-hidden focusable="false">
-        <path className="splash-arc" d="M24 96 C 24 28, 196 28, 196 96" />
-        <circle className="splash-dot splash-dot-a" r="9" cx="24" cy="96" />
-        <circle className="splash-dot splash-dot-b" r="9" cx="196" cy="96" />
-        <text className="splash-word" x="110" y="86" textAnchor="middle">Hallo</text>
+    <div className={`splash ${leaving ? 'splash-out' : ''}`} role="status" aria-live="polite" aria-label="Loading German Duo">
+      <svg className="splash-art" viewBox="0 0 240 70" aria-hidden focusable="false">
+        <line className="splash-line" x1="14" y1="40" x2="226" y2="40" />
+        <circle className="splash-a" cx="14" cy="40" r="8" />
+        <rect className="splash-b" x="218" y="32" width="16" height="16" rx="1" />
+        <circle className="splash-spark" cx="120" cy="40" r="3" />
       </svg>
+      <p className="splash-word"><span>Zusammen lernen.</span></p>
       <p className="splash-title">German Duo</p>
-      <p className="splash-sub">Zusammen lernen · learning together</p>
     </div>
   );
 }

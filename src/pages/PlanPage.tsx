@@ -1,34 +1,35 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { ChevronDown, ChevronRight, Plus } from 'lucide-react';
+import { CalendarClock, ChevronDown, ChevronRight, Plus } from 'lucide-react';
 import { useCurriculum, useGoalResources, useGoals, usePlan, usePostponements, useProgress, useResources } from '@/api/queries';
 import { cancelPostponement, decidePostponement } from '@/api/mutations';
 import { useRun } from '@/hooks/useRun';
 import { useWho } from '@/hooks/useWho';
-import { Badge, Button, Dialog, EmptyState, ErrorState, Field, Input, Segmented, SkeletonCards, Tabs, Textarea } from '@/components/ui/ui';
+import { Avatar, Badge, Button, Dialog, EmptyState, ErrorState, Field, Input, Segmented, SkeletonCards, Tabs, Textarea } from '@/components/ui/ui';
 import { FolderTag, MiniBar, PersonCell } from '@/components/people';
 import { Gantt } from '@/components/Gantt';
 import { GoalEditor, draftFromResource, type Draft } from '@/components/GoalEditor';
 import { GoalDialog } from '@/components/GoalDialog';
-import { ProgressDialog } from '@/components/ProgressDialog';
+import { MaterialCard } from '@/components/material';
 import { addDays, formatDay, planWeekNumber, startOfWeek, timeAgo, toISO, parseISO } from '@/lib/domain/dates';
 import { goalState, learnerGoalPct } from '@/lib/domain/progress';
 import { pageRangeLabel } from '@/lib/domain/folders';
 import type { GanttScale } from '@/lib/domain/gantt';
-import type { Goal } from '@/types/db';
+import type { Goal, GoalProgress, GoalResource, Learner } from '@/types/db';
 
-type View = 'timeline' | 'sheet' | 'requests';
+type View = 'week' | 'timeline' | 'sheet' | 'requests';
 type Filter = 'week' | 'open' | 'all' | 'done';
 
 export default function PlanPage() {
   const who = useWho();
   const [sp, setSp] = useSearchParams();
   const goals = useGoals(); const rs = useGoalResources(); const progress = useProgress(); const plan = usePlan(); const posts = usePostponements(); const cur = useCurriculum(); const resources = useResources();
-  const view = (sp.get('v') as View) || 'timeline';
+  const view = (sp.get('v') as View) || 'week';
+  const [weekOffset, setWeekOffset] = useState(0);
   const goalId = sp.get('goal');
   const [scale, setScale] = useState<GanttScale>('weeks'); const [filter, setFilter] = useState<Filter>('open'); const [q, setQ] = useState('');
   const [editor, setEditor] = useState<{ goal: Goal | null; prefill: { title: string; description?: string; curriculumWeek?: number; drafts: Draft[] } | null } | null>(null);
-  const [resId, setResId] = useState<string | null>(null);
+  const openUpdate = (id: string) => setParam('update', id);
   const [open, setOpen] = useState<Record<string, boolean>>({});
   const setParam = (k: string, v: string | null) => setSp((p) => { const n = new URLSearchParams(p); if (v === null) n.delete(k); else n.set(k, v); return n; }, { replace: true });
   useEffect(() => { if (!sp.get('new')) return; setEditor({ goal: null, prefill: null }); setSp((p) => { const n = new URLSearchParams(p); n.delete('new'); return n; }, { replace: true }); }, [sp, setSp]);
@@ -57,9 +58,9 @@ export default function PlanPage() {
   return (
     <div className="stack-lg">
       <div className="row between wrap"><h1>Plan</h1><Button variant="primary" icon={<Plus size={15} aria-hidden />} onClick={() => setEditor({ goal: null, prefill: null })}>New goal</Button></div>
-      <Tabs<View> label="Plan views" value={view} onChange={(v) => setParam('v', v === 'timeline' ? null : v)} tabs={[{ value: 'timeline', label: 'Timeline' }, { value: 'sheet', label: 'Sheet' }, { value: 'requests', label: 'Requests', dot: pendingForMe }]} />
+      <Tabs<View> label="Plan views" value={view} onChange={(v) => setParam('v', v === 'week' ? null : v)} tabs={[{ value: 'week', label: 'This week' }, { value: 'timeline', label: 'Timeline' }, { value: 'sheet', label: 'Table' }, { value: 'requests', label: 'Requests', dot: pendingForMe }]} />
 
-      {view !== 'requests' && (
+      {(view === 'timeline' || view === 'sheet') && (
         <div className="row between wrap">
           <Segmented<Filter> label="Which goals" value={filter} onChange={setFilter} options={[{ value: 'week', label: 'This week' }, { value: 'open', label: 'Open' }, { value: 'all', label: 'All' }, { value: 'done', label: 'Done' }]} />
           <div className="row wrap"><Input aria-label="Search goals" className="input-search" placeholder="Search goals" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -67,9 +68,11 @@ export default function PlanPage() {
         </div>
       )}
 
-      {view !== 'requests' && curWeek && curItems.length > 0 && !(goals.data ?? []).some((g) => g.curriculum_week === planWeek) && (
+      {(view === 'week' || view === 'timeline') && curWeek && curItems.length > 0 && !(goals.data ?? []).some((g) => g.curriculum_week === planWeek) && (
         <div className="suggest"><p><b>Suggested for week {planWeek}: {curWeek.theme}.</b> <span className="muted">{curWeek.goal} Based on file names only — contents not verified.</span></p><Button size="sm" onClick={fromCurriculum}>Create goal from this</Button></div>
       )}
+
+      {view === 'week' && <WeekView offset={weekOffset} setOffset={setWeekOffset} goals={goals.data ?? []} rs={rs.data ?? []} progress={progress.data ?? []} learners={who.learners} onOpenGoal={(id) => setParam('goal', id)} onUpdate={openUpdate} onNew={() => setEditor({ goal: null, prefill: null })} />}
 
       {view === 'timeline' && (list.length === 0 && (goals.data ?? []).length === 0
         ? <EmptyState title="No goals yet" action={<Button variant="primary" onClick={() => setEditor({ goal: null, prefill: null })}>Create the first goal</Button>}>A goal is shared: both of you follow it and record progress on the same files.</EmptyState>
@@ -91,8 +94,8 @@ export default function PlanPage() {
                 </tr>,
                 ...(isOpen ? gr.map((r) => (
                   <tr key={r.id} className="res-row">
-                    <th scope="row" className="sticky-col"><button className="linklike indent" onClick={() => setResId(r.id)}>{r.title}</button></th>
-                    <td><FolderTag level={r.level} folder={r.source_folder} /></td><td className="mono small">{pageRangeLabel(r.start_page, r.end_page, r.page_count)}</td><td />
+                    <th scope="row" className="sticky-col"><button className="linklike indent" onClick={() => openUpdate(r.id)}>{r.title}</button></th>
+                    <td><FolderTag level={r.level} folder={r.source_folder} /></td><td className="small">{pageRangeLabel(r.start_page, r.end_page, r.page_count)}</td><td />
                     {who.learners.map((l) => <td key={l.id}><PersonCell learner={l} r={r} p={(progress.data ?? []).find((p) => p.goal_resource_id === r.id && p.learner_id === l.id)} /></td>)}
                   </tr>)) : []),
               ];
@@ -102,8 +105,7 @@ export default function PlanPage() {
 
       {view === 'requests' && <Requests />}
 
-      <GoalDialog goalId={goalId} onClose={() => setParam('goal', null)} onEdit={(g) => { setParam('goal', null); setEditor({ goal: g, prefill: null }); }} onOpenResource={setResId} />
-      <ProgressDialog resourceId={resId} onClose={() => setResId(null)} />
+      <GoalDialog goalId={goalId} onClose={() => setParam('goal', null)} onEdit={(g) => { setParam('goal', null); setEditor({ goal: g, prefill: null }); }} onOpenResource={openUpdate} />
       <GoalEditor key={editor ? (editor.goal?.id ?? `n-${editor.prefill?.title ?? ''}`) : 'x'} open={!!editor} onClose={() => setEditor(null)} goal={editor?.goal} prefill={editor?.prefill}
         resources={editor?.goal ? (rs.data ?? []).filter((r) => r.goal_id === editor.goal!.id) : undefined} defaultStart={toISO(startOfWeek(parseISO(today)))} />
     </div>
@@ -134,6 +136,26 @@ function Requests() {
         footer={<><Button onClick={() => setDeciding(null)}>Cancel</Button><Button variant={deciding?.approve ? 'primary' : 'danger'} onClick={() => { if (deciding) void run(() => decidePostponement(deciding.id, deciding.approve, note.trim() || null), { ok: deciding.approve ? 'Approved — deadline moved' : 'Declined', invalidate: ['postponements', 'goals', 'change_log'] }).then(() => setDeciding(null)); }}>{deciding?.approve ? 'Approve' : 'Decline'}</Button></>}>
         <Field label="Note (optional)" htmlFor="dec-note"><Textarea id="dec-note" rows={2} value={note} onChange={(e) => setNote(e.target.value)} /></Field>
       </Dialog>
+    </div>
+  );
+}
+
+function WeekView({ offset, setOffset, goals, rs, progress, learners, onOpenGoal, onUpdate, onNew }: { offset: number; setOffset: (n: number) => void; goals: Goal[]; rs: GoalResource[]; progress: GoalProgress[]; learners: Learner[]; onOpenGoal: (id: string) => void; onUpdate: (id: string) => void; onNew: () => void }) {
+  const ws = addDays(startOfWeek(new Date()), offset * 7); const a = toISO(ws); const b = toISO(addDays(ws, 6));
+  const list = goals.filter((g) => g.status === 'active' && g.start_date <= b && g.deadline >= a);
+  return (
+    <div className="stack-lg">
+      <div className="weeknav" role="group" aria-label="Choose week"><Button size="sm" onClick={() => setOffset(offset - 1)}>← Earlier</Button><div className="weeknav-label"><b>{formatDay(a)} – {formatDay(b)}</b><span className="small muted">{offset === 0 ? 'This week' : offset > 0 ? `${offset} week${offset > 1 ? 's' : ''} ahead` : `${-offset} week${offset < -1 ? 's' : ''} ago`}</span></div><Button size="sm" onClick={() => setOffset(offset + 1)}>Later →</Button>{offset !== 0 && <Button size="sm" variant="ghost" onClick={() => setOffset(0)}>This week</Button>}</div>
+      {list.length === 0 ? <EmptyState icon={<CalendarClock size={26} />} title="No goal in this week" action={<Button variant="primary" onClick={onNew}>Create a goal</Button>}>A goal is shared: you both follow it and each record your own progress. Start with a few materials and page numbers.</EmptyState> : list.map((g) => {
+        const gr = rs.filter((r) => r.goal_id === g.id);
+        return (
+          <section key={g.id} className="goalbox" aria-labelledby={`gb-${g.id}`}>
+            <header className="goalbox-head"><div className="grow"><h2 id={`gb-${g.id}`}>{g.title}</h2><p className="small muted">{formatDay(g.start_date)} – {formatDay(g.deadline)}{g.deadline !== g.original_deadline ? ` (moved from ${formatDay(g.original_deadline)})` : ''}{g.description ? ` · ${g.description}` : ''}</p></div>
+              <Button size="sm" onClick={() => onOpenGoal(g.id)}>Goal options</Button></header>
+            <div className="goalbox-bars">{learners.map((l) => { const pc = learnerGoalPct(gr, progress, l.id); return <span key={l.id} className="gbar"><Avatar code={l.code} accent={l.accent} size={15} /> <span className="small">{l.display_name}</span> <MiniBar pct={pc} accent={l.accent} /> <b className="small">{pc}%</b></span>; })}</div>
+            {gr.length === 0 ? <p className="muted small">No materials yet. Open “Goal options” → Edit to add some.</p> : <div className="stack">{gr.map((r) => <MaterialCard key={r.id} r={r} progress={progress} learners={learners} onUpdate={onUpdate} />)}</div>}
+          </section>);
+      })}
     </div>
   );
 }

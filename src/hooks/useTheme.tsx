@@ -14,7 +14,7 @@ export function resolveTheme(pref: ThemePref): 'light' | 'dark' {
 }
 export function applyTheme(resolved: 'light' | 'dark') {
   document.documentElement.setAttribute('data-theme', resolved);
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', resolved === 'dark' ? '#0E1122' : '#F5F6FA');
+  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', resolved === 'dark' ? '#0E1511' : '#F0F4F1');
 }
 
 /** `onPersist` lets the app also save the preference on the learner profile (so it follows them across devices). */

@@ -47,6 +47,7 @@ export function Gantt({ goals, resources, progress, learners, plan, scale, onOpe
                 {tOff !== null && <i className="g-today" style={{ left: tOff }} aria-hidden />}
                 <button className="g-bar" style={{ left: box.left, width: box.width }} onClick={() => onOpen(g.id)} aria-label={`${g.title}, ${formatDay(g.start_date)} to ${formatDay(g.deadline)}. ${learners.map((l) => `${l.display_name} ${learnerGoalPct(rs, progress, l.id)}%`).join(', ')}`}>
                   {box.origRight && <i className="g-post" style={{ width: box.origRight, right: 0 }} title="Postponed" />}
+                  {box.width >= 120 && <b className="g-title">{g.title}</b>}
                   {learners.map((l) => <span key={l.id} className={`g-lane g-lane-${l.accent}`}><i style={{ width: `${learnerGoalPct(rs, progress, l.id)}%` }} /></span>)}
                 </button>
               </div>

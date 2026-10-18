@@ -23,7 +23,7 @@ export function Dialog({ open, onClose, title, children, footer, wide }: { open:
   const titleId = useId();
   useEffect(() => {
     const d = ref.current; if (!d) return;
-    if (open && !d.open) d.showModal();
+    if (open && !d.open) { d.showModal(); (d.querySelector('.dialog-body') as HTMLElement | null)?.focus({ preventScroll: true }); }
     if (!open && d.open) d.close();
   }, [open]);
   return (
@@ -34,7 +34,7 @@ export function Dialog({ open, onClose, title, children, footer, wide }: { open:
             <h2 id={titleId}>{title}</h2>
             <IconButton label="Close dialog" onClick={onClose}><X size={20} aria-hidden /></IconButton>
           </header>
-          <div className="dialog-body">{children}</div>
+          <div className="dialog-body" tabIndex={-1}>{children}</div>
           {footer && <footer className="dialog-foot">{footer}</footer>}
         </div>
       )}
@@ -118,5 +118,16 @@ export function Tabs<T extends string>({ value, onChange, tabs, label }: { value
     <div className="tabs" role="tablist" aria-label={label}>
       {tabs.map((t) => <button key={t.value} role="tab" aria-selected={value === t.value} className={cx('tabs-item', value === t.value && 'on')} onClick={() => onChange(t.value)}>{t.label}<Dot n={t.dot} /></button>)}
     </div>
+  );
+}
+
+export function Ring({ value, size = 64, stroke = 7, accent, label, children }: { value: number; size?: number; stroke?: number; accent: 'blue' | 'orange'; label: string; children?: ReactNode }) {
+  const v = Math.min(100, Math.max(0, value)); const r = (size - stroke) / 2; const c = 2 * Math.PI * r;
+  return (
+    <span className={cx('ring', `ring-${accent}`)} style={{ width: size, height: size }} role="img" aria-label={`${label}: ${v}%`}>
+      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden><circle cx={size / 2} cy={size / 2} r={r} className="ring-track" strokeWidth={stroke} fill="none" />
+        <circle cx={size / 2} cy={size / 2} r={r} className="ring-fill" strokeWidth={stroke} fill="none" strokeLinecap="round" strokeDasharray={c} strokeDashoffset={c * (1 - v / 100)} transform={`rotate(-90 ${size / 2} ${size / 2})`} /></svg>
+      <span className="ring-c">{children ?? <b>{v}%</b>}</span>
+    </span>
   );
 }

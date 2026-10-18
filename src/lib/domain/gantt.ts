@@ -2,7 +2,7 @@ import { addDays, parseISO, startOfWeek, toISO } from './dates';
 import { daysBetweenISO } from './stats';
 
 export type GanttScale = 'weeks' | 'days';
-export const DAY_PX: Record<GanttScale, number> = { weeks: 5, days: 22 };
+export const DAY_PX: Record<GanttScale, number> = { weeks: 9, days: 28 };
 
 export interface GanttRange { start: string; end: string; days: number }
 /** Timeline is limited to the plan (plus whatever the goals need) — never an endless scroll. Padded to whole weeks. */
@@ -32,7 +32,7 @@ export function weekTicks(range: GanttRange): Array<{ date: string; offsetDays: 
   return out;
 }
 export function monthSpans(range: GanttRange): Array<{ label: string; offsetDays: number; days: number }> {
-  const out: Array<{ label: string; offsetDays: number; days: number }> = []; const fmt = new Intl.DateTimeFormat('en-GB', { month: 'short', year: '2-digit' });
+  const out: Array<{ label: string; offsetDays: number; days: number }> = []; const fmt = new Intl.DateTimeFormat('en-GB', { month: 'short', year: 'numeric' });
   for (let i = 0; i < range.days; i++) {
     const d = addDays(parseISO(range.start), i); const label = fmt.format(d);
     const last = out[out.length - 1];

@@ -3,5 +3,6 @@ interface ImportMetaEnv {
   readonly VITE_SUPABASE_URL: string;
   readonly VITE_SUPABASE_ANON_KEY: string;
   readonly VITE_LEARNER_EMAILS?: string;
+  readonly VITE_DRIVE_ROOT_URL?: string;
 }
 interface ImportMeta { readonly env: ImportMetaEnv; }

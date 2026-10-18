@@ -32,7 +32,7 @@ export function PersonCell({ learner, r, p }: { learner: Learner; r: GoalResourc
     <div className="pcell">
       <StatusMark status={p?.status ?? 'not_started'} />
       <MiniBar pct={m.pct} accent={learner.accent} />
-      <span className="mono small muted">
+      <span className="small muted">
         {m.pct === null ? '' : `${m.pct}%`}{m.total && m.unit === 'pages' ? ` · ${m.done}/${m.total} p` : m.total ? ` · ${m.done}/${m.total} ${m.unit}` : ''}{p?.current_page && p.status !== 'completed' ? ` · at p.${p.current_page}` : ''}{p?.minutes_total ? ` · ${p.minutes_total}m` : ''}
       </span>
       {p?.note && <span className="pnote" title={p.note}>“{p.note.length > 60 ? p.note.slice(0, 57) + '…' : p.note}”</span>}

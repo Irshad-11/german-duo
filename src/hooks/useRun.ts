@@ -3,6 +3,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useToast } from './useToast';
 import { friendlyError } from '@/lib/errors';
 import { latestLogId, revertChange } from '@/api/mutations';
+import { emitPet } from '@/pet/bus';
 
 export interface UndoSpec { table: string; rowId: string | ((value: never) => string); op: 'INSERT' | 'UPDATE' | 'DELETE' }
 /** Runs a mutation with consistent feedback. With `undo`, the success toast carries an Undo button that reverts exactly what was just done
@@ -21,12 +22,13 @@ export function useRun() {
         if (rowId) { try { id = await latestLogId(u.table, rowId, u.op); } catch { id = null; } }
         if (id !== null) {
           const entry = id;
-          toast.undoable(opts.ok, () => { void revertChange(entry, u.op === 'DELETE').then(() => { toast.info('Undone'); refresh(); }, (e) => toast.error(friendlyError(e))); });
+          toast.undoable(opts.ok, () => { void revertChange(entry, u.op === 'DELETE').then(() => { toast.info('Undone'); emitPet({ kind: 'undone' }); refresh(); }, (e) => toast.error(friendlyError(e))); });
         } else toast.success(opts.ok);
       } else if (opts.ok) toast.success(opts.ok);
+      if (opts.ok) emitPet({ kind: 'saved' });
       return { ok: true, value };
     } catch (e) {
-      toast.error(friendlyError(e));
+      toast.error(friendlyError(e)); emitPet({ kind: 'error' });
       for (const k of opts.invalidate ?? []) void qc.invalidateQueries({ queryKey: [k] });
       return { ok: false };
     }

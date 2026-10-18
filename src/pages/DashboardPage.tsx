@@ -1,99 +1,103 @@
 import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
-import { useAnnouncements, useAnnReads, useChangeLog, useGoalResources, useGoals, useLearners, useMessages, useNotes, usePlan, usePostponements, useProgress, useSessions, useVocabLog } from '@/api/queries';
+import { Link, useSearchParams } from 'react-router-dom';
+import { MessageSquarePlus, Plus, Timer } from 'lucide-react';
+import { useAnnouncements, useAnnReads, useChangeLog, useCurriculum, useGoalResources, useGoals, useLearners, useMessages, useNotes, usePlan, usePostponements, useProgress, useResources, useSessions, useVocab, useVocabLog, useVocabState } from '@/api/queries';
 import { useWho } from '@/hooks/useWho';
 import { useQuick } from '@/hooks/useQuick';
-import { Avatar, Button, EmptyState, ErrorState, SkeletonCards } from '@/components/ui/ui';
-import { MiniBar } from '@/components/people';
-import { MinutesChart } from '@/components/charts';
+import { Avatar, Button, EmptyState, ErrorState, Ring, SkeletonCards } from '@/components/ui/ui';
+import { MaterialCard } from '@/components/material';
+import { Heatmap, Journey, MinutesChart } from '@/components/charts';
 import { ChangeList } from '@/components/ChangeList';
-import { activeDaysThisWeek, minutesInWeek, reviewsThisWeek, totalMinutes, weeklyMinutes } from '@/lib/domain/stats';
-import { addDays, formatDay, formatMinutes, planWeekNumber, startOfWeek, timeAgo, toISO, totalPlanWeeks, weekLabel } from '@/lib/domain/dates';
+import { Welcome } from '@/components/Welcome';
+import { activeDaysThisWeek, minutesInWeek, reachedCurriculumWeek, reviewsThisWeek, totalMinutes, weeklyMinutes } from '@/lib/domain/stats';
+import { formatMinutes, planWeekNumber, timeAgo, totalPlanWeeks } from '@/lib/domain/dates';
 import { describe, lastUpdateBy } from '@/lib/domain/changelog';
-import { goalState, learnerGoalPct, measure } from '@/lib/domain/progress';
-import { ATTENTION_STATUSES, statusLabel } from '@/lib/domain/status';
+import { measure } from '@/lib/domain/progress';
+import { observe, upNext } from '@/pet/observe';
 
 const full = (iso: string | null) => (iso ? new Date(iso).toLocaleString('en-GB', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : '');
+const dateLine = () => new Date().toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 export default function DashboardPage() {
-  const who = useWho(); const quick = useQuick();
-  const learners = useLearners(); const plan = usePlan(); const goals = useGoals(); const rs = useGoalResources(); const progress = useProgress(); const sessions = useSessions();
+  const who = useWho(); const quick = useQuick(); const [, setSp] = useSearchParams();
+  const learners = useLearners(); const plan = usePlan(); const goals = useGoals(); const rs = useGoalResources(); const progress = useProgress(); const sessions = useSessions(); const cur = useCurriculum();
   const log = useChangeLog(300); const posts = usePostponements(); const anns = useAnnouncements(); const reads = useAnnReads(); const msgs = useMessages(); const notes = useNotes(); const vlog = useVocabLog();
+  const vocab = useVocab(); const vstate = useVocabState(); const lib = useResources();
   const failed = [learners, goals, rs, progress, sessions].find((q) => q.isError);
   const loading = [learners, goals, rs, progress, sessions, plan].some((q) => q.isLoading);
-  const now = new Date(); const today = toISO(now); const wkS = toISO(startOfWeek(now)); const wkE = toISO(addDays(startOfWeek(now), 6));
-  const me = who.me;
+  const me = who.me; const now = new Date();
 
   const d = useMemo(() => {
     if (!me) return null;
     const L = who.learners; const g = goals.data ?? []; const r = rs.data ?? []; const p = progress.data ?? []; const s = sessions.data ?? [];
-    const weekGoals = g.filter((x) => x.status === 'active' && x.start_date <= wkE && x.deadline >= wkS);
-    const last = lastUpdateBy(log.data ?? []);
+    const ctx = { me, other: who.other, learners: L, goals: g, resources: r, progress: p, sessions: s, words: vocab.data ?? [], wordState: vstate.data ?? [], notes: notes.data ?? [], posts: posts.data ?? [], messages: msgs.data ?? [], now };
+    const obs = observe(ctx); const last = lastUpdateBy(log.data ?? []);
     const people = L.map((l) => {
-      const asg = r.filter((x) => weekGoals.some((w) => w.id === x.goal_id));
-      const done = asg.filter((x) => p.find((q) => q.goal_resource_id === x.id && q.learner_id === l.id)?.status === 'completed').length;
-      const pct = asg.length ? Math.round(asg.reduce((a, x) => a + (measure(x, p.find((q) => q.goal_resource_id === x.id && q.learner_id === l.id)).pct ?? 0), 0) / asg.length) : 0;
-      return { l, done, total: asg.length, pct, minutes: minutesInWeek(s, l.id, now), days: activeDaysThisWeek(s, l.id, now), words: reviewsThisWeek(vlog.data ?? [], l.id, now), total_min: totalMinutes(s, l.id), last: last[l.id] };
+      const mine = r.filter((x) => g.some((y) => y.id === x.goal_id && y.status === 'active'));
+      const done = mine.filter((x) => p.find((q) => q.goal_resource_id === x.id && q.learner_id === l.id)?.status === 'completed').length;
+      const pct = mine.length ? Math.round(mine.reduce((a, x) => a + (measure(x, p.find((q) => q.goal_resource_id === x.id && q.learner_id === l.id)).pct ?? 0), 0) / mine.length) : 0;
+      return { l, done, total: mine.length, pct, minutes: minutesInWeek(s, l.id, now), days: activeDaysThisWeek(s, l.id, now), words: reviewsThisWeek(vlog.data ?? [], l.id, now), all: totalMinutes(s, l.id), last: last[l.id], reached: reachedCurriculumWeek(g, r, p, l.id) };
     });
-    const attention: Array<{ key: string; text: string; to: string }> = [];
-    for (const q of posts.data ?? []) if (q.status === 'pending' && q.requester_id !== me.id) attention.push({ key: q.id, text: `${who.nameOf(q.requester_id)} asks to postpone “${g.find((x) => x.id === q.goal_id)?.title}” to ${formatDay(q.proposed_deadline)} — needs a decision`, to: '/plan?v=requests' });
-    for (const q of p) if (q.learner_id !== me.id && ATTENTION_STATUSES.includes(q.status) && q.status !== 'awaiting_review') { const res = r.find((x) => x.id === q.goal_resource_id); if (res) attention.push({ key: q.id, text: `${who.nameOf(q.learner_id)}: “${res.title}” — ${statusLabel(q.status).toLowerCase()}`, to: `/plan?goal=${res.goal_id}` }); }
-    for (const n of notes.data ?? []) if (n.kind === 'question' && n.question_state !== 'answered' && n.author_id !== me.id) attention.push({ key: n.id, text: `${who.nameOf(n.author_id)} asked: ${n.title ?? n.body.slice(0, 70)}`, to: `/notes?note=${n.id}` });
-    for (const x of g) if (goalState(x, r.filter((y) => y.goal_id === x.id), p, L.map((l) => l.id), today) === 'overdue') attention.push({ key: x.id, text: `Overdue: “${x.title}” (due ${formatDay(x.deadline)})`, to: `/plan?goal=${x.id}` });
-    const un = (msgs.data ?? []).filter((m) => m.sender_id !== me.id && !m.read_at).length; if (un) attention.push({ key: 'm', text: `${un} unread message${un > 1 ? 's' : ''}`, to: '/chat' });
-    return { L, people, weekGoals, attention, bars: weeklyMinutes(s, L.map((l) => l.id), 8, now), r, p, weeks: plan.data ? totalPlanWeeks(plan.data.start_date, plan.data.target_end_date) : 52 };
+    return { L, ctx, obs, people, next: upNext(ctx, 3), bars: weeklyMinutes(s, L.map((l) => l.id), 8, now), weeks: plan.data ? totalPlanWeeks(plan.data.start_date, plan.data.target_end_date) : 52 };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [me, who.learners, goals.data, rs.data, progress.data, sessions.data, log.data, posts.data, notes.data, msgs.data, vlog.data, plan.data]);
+  }, [me, who.learners, who.other, goals.data, rs.data, progress.data, sessions.data, log.data, posts.data, notes.data, msgs.data, vlog.data, vocab.data, vstate.data, plan.data]);
 
-  const notices = useMemo(() => { const readMap = new Map((reads.data ?? []).map((x) => [x.announcement_id, x])); const t = Date.now();
-    return (anns.data ?? []).filter((a) => !a.expires_at || new Date(a.expires_at).getTime() > t).filter((a) => !readMap.get(a.id)?.dismissed).sort((a, b) => (a.priority === b.priority ? b.created_at.localeCompare(a.created_at) : a.priority === 'important' ? -1 : 1)).slice(0, 2); }, [anns.data, reads.data]);
+  const notices = useMemo(() => { const m = new Map((reads.data ?? []).map((x) => [x.announcement_id, x])); const t = Date.now();
+    return (anns.data ?? []).filter((a) => !a.expires_at || new Date(a.expires_at).getTime() > t).filter((a) => !m.get(a.id)?.dismissed).sort((a, b) => (a.priority === b.priority ? b.created_at.localeCompare(a.created_at) : a.priority === 'important' ? -1 : 1)).slice(0, 2); }, [anns.data, reads.data]);
 
   if (failed) return <ErrorState message={(failed.error as Error).message} onRetry={() => void failed.refetch()} />;
   if (loading || !d || !me) return <SkeletonCards n={3} />;
   const wk = plan.data ? planWeekNumber(plan.data.start_date, now) : null;
+  const attention = d.obs.filter((o) => o.priority >= 70 && !o.materialId);
+  const reached = Object.fromEntries(d.people.map((x) => [x.l.id, x.reached]));
+  const lead = d.obs.find((o) => !o.materialId) ?? d.obs[0];
+  const welcome = { hasGoal: (goals.data ?? []).length > 0, hasLink: (lib.data ?? []).some((x) => x.external_url) || (rs.data ?? []).some((x) => x.external_url), hasSession: (sessions.data ?? []).length > 0, hasWord: (vocab.data ?? []).length > 0, otherSeen: !!who.other?.last_login_at, otherName: who.other?.display_name ?? '' };
 
   return (
     <div className="stack-lg">
-      <div className="row between wrap">
-        <div><h1>This week</h1><p className="muted mono small">{weekLabel(wkS)}{wk && wk >= 1 ? ` · week ${wk} of ${d.weeks}` : ''}</p></div>
-        <div className="row wrap"><Button size="sm" onClick={quick.openSession}>Log time</Button><Button size="sm" onClick={() => quick.openWord()}>Add word</Button><Button size="sm" onClick={() => quick.openNote()}>Note</Button><Link className="btn btn-primary btn-sm" to="/plan?new=1">New goal</Link></div>
+      <header className="hero">
+        <p className="kicker">{dateLine()}{wk && wk >= 1 ? ` · Week ${wk} of ${d.weeks}` : ''}</p>
+        <h1>Hallo, {me.display_name}</h1>
+        {lead && <p className="lead-text">{lead.text}</p>}
+        <div className="bigbtns">
+          <Button variant="primary" icon={<Timer size={17} aria-hidden />} onClick={quick.openSession}>Log study time</Button>
+          <Button icon={<Plus size={17} aria-hidden />} onClick={() => quick.openWord()}>Add a word</Button>
+          <Button icon={<MessageSquarePlus size={17} aria-hidden />} onClick={() => quick.openNote('question')}>Ask a question</Button>
+        </div>
+      </header>
+
+      <div className="layout-2">
+        <div className="col-main">
+          <Welcome s={welcome} />
+          <section aria-labelledby="h-next"><h2 id="h-next" className="sec-title">Next for {me.display_name}</h2>
+            {d.next.length === 0 ? <div className="card"><EmptyState title="Nothing to study right now" action={<Link className="btn btn-primary" to="/plan?new=1">Create a goal</Link>}>Create a goal with a few materials. Every material then shows up here with one button: “Update progress &amp; time”.</EmptyState></div>
+              : <div className="stack">{d.next.map((n) => <MaterialCard key={n.r.id} r={n.r} goal={n.g} progress={progress.data ?? []} learners={d.L} onUpdate={(id) => setSp((p) => { const x = new URLSearchParams(p); x.set('update', id); return x; })} />)}
+                <p className="small"><Link to="/plan">Open the whole week in Plan →</Link></p></div>}
+          </section>
+          <section aria-labelledby="h-jour" className="card"><h2 id="h-jour" className="card-title">The road from A1 to B1</h2><Journey weeks={cur.data?.weeks ?? []} learners={d.L} reached={reached} planWeek={wk} /></section>
+        </div>
+
+        <aside className="col-side" aria-label="Both of us">
+          <section className="card" aria-labelledby="h-people"><h2 id="h-people" className="card-title">Both of us</h2>
+            <div className="people">{d.people.map((x) => (
+              <div key={x.l.id} className={`pcard pcard-${x.l.accent}`}>
+                <div className="pc-top"><Ring value={x.pct} size={58} stroke={6} accent={x.l.accent} label={`${x.l.display_name}, all active materials`} /><div className="grow"><p className="pc-name"><Avatar code={x.l.code} accent={x.l.accent} size={15} /> {x.l.display_name}</p><p className="small muted">{x.done} of {x.total} materials finished</p></div></div>
+                <dl className="pc-stats"><div><dt>Minutes this week</dt><dd>{formatMinutes(x.minutes)}</dd></div><div><dt>Study days</dt><dd>{x.days} of 7</dd></div><div><dt>Words reviewed</dt><dd>{x.words}</dd></div></dl>
+                <p className="small muted" title={full(x.l.last_login_at)}>Last login: {x.l.last_login_at ? timeAgo(x.l.last_login_at) : 'never'}</p>
+                <p className="small muted" title={x.last ? full(x.last.created_at) : ''}>Last update: {x.last ? `${timeAgo(x.last.created_at)} — ${describe(x.last).toLowerCase()}, ${x.last.label}` : '—'}</p>
+              </div>))}</div>
+          </section>
+          {notices.length > 0 && <section className="card" aria-labelledby="h-not"><h2 id="h-not" className="card-title">Notices</h2><div className="stack-sm">{notices.map((a) => <div key={a.id} className={`notice ${a.priority === 'important' ? 'notice-important' : ''}`}><b>{a.title}</b><p className="small">{a.body.slice(0, 160)}{a.body.length > 160 ? '…' : ''}</p><p className="small muted">{who.nameOf(a.author_id)}, {timeAgo(a.created_at)}</p></div>)}</div></section>}
+          {attention.length > 0 && <section className="card" aria-labelledby="h-attn"><h2 id="h-attn" className="card-title">Needs attention</h2><ul className="plain-list attn">{attention.slice(0, 5).map((o) => <li key={o.id}>{o.to ? <Link to={o.to}>{o.text}</Link> : o.text}</li>)}</ul></section>}
+        </aside>
       </div>
-
-      {notices.map((a) => <div key={a.id} className={`notice ${a.priority === 'important' ? 'notice-important' : ''}`}><b>{a.title}</b> <span className="muted">— {a.body.slice(0, 140)}{a.body.length > 140 ? '…' : ''}</span> <span className="small muted">({who.nameOf(a.author_id)}, {timeAgo(a.created_at)})</span></div>)}
-
-      <section aria-labelledby="h-people"><h2 id="h-people">Both of us</h2>
-        <div className="sheet-wrap"><table className="tbl tbl-people">
-          <thead><tr><th scope="col">Person</th><th scope="col">Last login</th><th scope="col">Last seen</th><th scope="col">Last update</th><th scope="col">Goals this week</th><th scope="col">Minutes</th><th scope="col">Study days</th><th scope="col">Words</th></tr></thead>
-          <tbody>{d.people.map((x) => (
-            <tr key={x.l.id}>
-              <th scope="row"><Avatar code={x.l.code} accent={x.l.accent} /> <span className="small">{x.l.display_name}</span></th>
-              <td title={full(x.l.last_login_at)}>{x.l.last_login_at ? timeAgo(x.l.last_login_at) : <span className="muted">never</span>}</td>
-              <td title={full(x.l.last_seen_at)}>{x.l.last_seen_at ? timeAgo(x.l.last_seen_at) : <span className="muted">—</span>}</td>
-              <td>{x.last ? <span title={full(x.last.created_at)}>{timeAgo(x.last.created_at)}<br /><span className="small muted">{describe(x.last)}: {x.last.label}</span></span> : <span className="muted">—</span>}</td>
-              <td><span className="mono">{x.pct}%</span> <MiniBar pct={x.pct} accent={x.l.accent} /><br /><span className="small muted">{x.done}/{x.total} files done</span></td>
-              <td className="mono">{formatMinutes(x.minutes)}<br /><span className="small muted">total {formatMinutes(x.total_min)}</span></td>
-              <td className="mono">{x.days}/7</td><td className="mono">{x.words}</td>
-            </tr>))}</tbody></table></div>
-      </section>
-
-      {d.weekGoals.length === 0 ? <EmptyState title="No goals this week" action={<Link className="btn btn-primary" to="/plan?new=1">Plan the week</Link>}>Create a goal both of you follow. The Plan tab can suggest one from the curriculum.</EmptyState> : (
-        <section aria-labelledby="h-goals"><h2 id="h-goals">Goals this week</h2>
-          <div className="sheet-wrap"><table className="tbl"><thead><tr><th scope="col">Goal</th><th scope="col">Due</th>{d.L.map((l) => <th key={l.id} scope="col"><span className={`txt-${l.accent}`}>{l.code}</span></th>)}</tr></thead>
-            <tbody>{d.weekGoals.map((g) => { const gr = d.r.filter((x) => x.goal_id === g.id); return (
-              <tr key={g.id}><th scope="row"><Link to={`/plan?goal=${g.id}`}>{g.title}</Link></th><td className="mono">{formatDay(g.deadline)}</td>
-                {d.L.map((l) => { const pc = learnerGoalPct(gr, d.p, l.id); return <td key={l.id}><span className="mono">{pc}%</span> <MiniBar pct={pc} accent={l.accent} /></td>; })}</tr>); })}</tbody></table></div>
-        </section>
-      )}
 
       <div className="two">
-        <section aria-labelledby="h-attn"><h2 id="h-attn">Needs attention</h2>
-          {d.attention.length === 0 ? <p className="muted">Nothing is waiting.</p> : <ul className="plain-list attn">{d.attention.slice(0, 8).map((a) => <li key={a.key}><Link to={a.to}>{a.text}</Link></li>)}</ul>}
-        </section>
-        <section aria-labelledby="h-min"><h2 id="h-min">Minutes per week</h2><MinutesChart rows={d.bars} learners={d.L} /></section>
+        <section className="card" aria-labelledby="h-heat"><h2 id="h-heat" className="card-title">Study days</h2><Heatmap sessions={sessions.data ?? []} learners={d.L} /></section>
+        <section className="card" aria-labelledby="h-min"><h2 id="h-min" className="card-title">Minutes per week</h2><MinutesChart rows={d.bars} learners={d.L} /></section>
       </div>
 
-      <section aria-labelledby="h-log"><div className="row between"><h2 id="h-log">Latest changes</h2><Link to="/log" className="small">Full log &amp; revert</Link></div>
-        <ChangeList entries={(log.data ?? []).slice(0, 8)} compact /></section>
+      <section className="card" aria-labelledby="h-log"><div className="row between"><h2 id="h-log" className="card-title">Latest changes</h2><Link to="/log" className="small">History &amp; undo →</Link></div><ChangeList entries={(log.data ?? []).slice(0, 6)} compact /></section>
     </div>
   );
 }

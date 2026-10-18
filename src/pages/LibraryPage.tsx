@@ -1,10 +1,12 @@
 import { useMemo, useState } from 'react';
-import { ExternalLink, FileImage, FileText, Link2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
+import { FileImage, FileText, Link2, Pencil, Plus, Search, Trash2 } from 'lucide-react';
 import { useCurriculum, useGoalResources, useGoals, usePlan, useResources } from '@/api/queries';
 import { addCurriculumItem, addGoalResource, createResource, deleteCurriculumItem, deleteResource, updateCurriculumItem, updateResource } from '@/api/mutations';
 import { useRun } from '@/hooks/useRun';
 import { Badge, Button, Chip, ConfirmDialog, Dialog, EmptyState, ErrorState, Field, Input, Segmented, Select, SkeletonCards, Textarea } from '@/components/ui/ui';
 import { FolderTag } from '@/components/people';
+import { MaterialLinks } from '@/components/material';
+import { DRIVE_ROOT_URL } from '@/lib/config';
 import { filterResources, LibraryPicker } from '@/components/LibraryPicker';
 import { CATEGORIES, LEVELS, categoryLabel, formatSize } from '@/lib/domain/folders';
 import { checkResourceUrl } from '@/lib/domain/links';
@@ -38,6 +40,7 @@ export default function LibraryPage() {
 
       {tab === 'files' && (
         <>
+          <p className="note-box">Shared Drive folder: <a href={DRIVE_ROOT_URL} target="_blank" rel="noopener noreferrer">open the root folder</a>. Drive cannot link to a file by name, so files without a saved link open the folder plus a name search.</p>
           <p className="muted small">{total} files from your folder inventory · {withLink} with a Drive link saved. Original folders are shown on every file so you can find it on Drive.</p>
           <div className="stack-sm">
             <div className="search"><Search size={16} aria-hidden /><Input aria-label="Search the library" placeholder="Search title, file name or folder" value={q} onChange={(e) => setQ(e.target.value)} /></div>
@@ -59,7 +62,7 @@ export default function LibraryPage() {
                         <p className="small muted">{categoryLabel(r.category)} · {r.file_type.toUpperCase()}{r.page_count ? ` · ${r.page_count} pages` : r.is_catalog && r.file_type === 'pdf' ? ' · page count unavailable' : ''}{r.size_kb ? ` · ${formatSize(r.size_kb)}` : ''}</p>
                       </div>
                       <div className="row wrap end">
-                        {r.external_url ? <a className="btn btn-secondary btn-sm" href={r.external_url} target="_blank" rel="noopener noreferrer"><ExternalLink size={14} aria-hidden /> Open</a> : <Badge>no link</Badge>}
+                        <MaterialLinks url={r.external_url} filename={r.filename} title={r.title} compact />
                         <Button size="sm" icon={<Link2 size={14} aria-hidden />} onClick={() => setEdit(r)} aria-label={`Edit link and details for ${r.title}`}>Link</Button>
                         <Button size="sm" variant="primary" onClick={() => setAddTo(r)}>Add to week</Button>
                       </div>

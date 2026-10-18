@@ -22,3 +22,20 @@ export function reviewsThisWeek(log: VocabReviewLog[], learnerId: string, now: D
   const start = startOfWeek(now).getTime(); return log.filter((l) => l.learner_id === learnerId && new Date(l.reviewed_at).getTime() >= start).length;
 }
 export function daysBetweenISO(a: string, b: string): number { return Math.round((parseISO(b).getTime() - parseISO(a).getTime()) / 86400000); }
+
+/** Highest curriculum week whose goal this learner has fully completed (null-safe; 0 when none). Used by the journey track. */
+export function reachedCurriculumWeek(goals: Array<{ id: string; curriculum_week: number | null; status: string }>, resources: Array<{ id: string; goal_id: string }>, progress: Array<{ goal_resource_id: string; learner_id: string; status: string }>, learnerId: string): number {
+  let best = 0;
+  for (const g of goals) {
+    if (!g.curriculum_week || g.status === 'dropped') continue;
+    const rs = resources.filter((r) => r.goal_id === g.id);
+    if (rs.length && rs.every((r) => progress.find((p) => p.goal_resource_id === r.id && p.learner_id === learnerId)?.status === 'completed')) best = Math.max(best, g.curriculum_week);
+  }
+  return best;
+}
+/** Minutes studied per calendar day (ISO date → minutes) for one learner. */
+export function minutesPerDay(sessions: StudySession[], learnerId: string): Map<string, number> {
+  const m = new Map<string, number>();
+  for (const s of sessions) if (s.learner_id === learnerId) { const k = toISO(new Date(s.started_at)); m.set(k, (m.get(k) ?? 0) + s.minutes); }
+  return m;
+}

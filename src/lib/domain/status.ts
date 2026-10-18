@@ -38,3 +38,14 @@ export function quickActions(status: ResourceStatus): ResourceStatus[] {
 export const requiresCorrection = (from: ResourceStatus, to: ResourceStatus): boolean => from === 'completed' && to !== 'completed';
 
 export const PRIORITY_LABEL: Record<1 | 2 | 3, string> = { 1: 'High', 2: 'Normal', 3: 'Low' };
+
+/** The app shows four plain choices; the ten detailed statuses stay available under "more options". */
+export type Simple = 'not_started' | 'studying' | 'finished' | 'help';
+export const SIMPLE_LABEL: Record<Simple, string> = { not_started: 'Not started', studying: 'Studying', finished: 'Finished', help: 'Need help' };
+export function simpleOf(s: ResourceStatus): Simple {
+  if (s === 'completed') return 'finished'; if (s === 'needs_help') return 'help'; if (s === 'not_started' || s === 'ready') return 'not_started'; return 'studying';
+}
+export function statusFromSimple(target: Simple, current: ResourceStatus): ResourceStatus {
+  if (simpleOf(current) === target) return current;
+  return target === 'finished' ? 'completed' : target === 'help' ? 'needs_help' : target === 'studying' ? 'reading' : 'not_started';
+}

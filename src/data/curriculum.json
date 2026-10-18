@@ -1,0 +1,1770 @@
+{
+ "weeks": [
+  {
+   "week_no": 1,
+   "level": "A1",
+   "theme": "Sounds, alphabet, farewells",
+   "goal": "Read the alphabet aloud and say hello/goodbye confidently."
+  },
+  {
+   "week_no": 2,
+   "level": "A1",
+   "theme": "Days and months",
+   "goal": "Name days and months; first short story."
+  },
+  {
+   "week_no": 3,
+   "level": "A1",
+   "theme": "Ordinals and telling time",
+   "goal": "Say dates and clock times."
+  },
+  {
+   "week_no": 4,
+   "level": "A1",
+   "theme": "sein and haben",
+   "goal": "Conjugate sein/haben and regular verbs."
+  },
+  {
+   "week_no": 5,
+   "level": "A1",
+   "theme": "Yes/no questions",
+   "goal": "Ask and answer simple questions."
+  },
+  {
+   "week_no": 6,
+   "level": "A1",
+   "theme": "Time prepositions",
+   "goal": "Use am/um/im with time expressions."
+  },
+  {
+   "week_no": 7,
+   "level": "A1",
+   "theme": "Cases and Nominativ",
+   "goal": "Understand what a case is; recognise Nominativ."
+  },
+  {
+   "week_no": 8,
+   "level": "A1",
+   "theme": "Akkusativ and its prepositions",
+   "goal": "Use Akkusativ after common prepositions."
+  },
+  {
+   "week_no": 9,
+   "level": "A1",
+   "theme": "Sentence structure",
+   "goal": "Build main clauses with correct verb position."
+  },
+  {
+   "week_no": 10,
+   "level": "A1",
+   "theme": "Consolidation I",
+   "goal": "Review weeks 1–9; re-read two class sheets."
+  },
+  {
+   "week_no": 11,
+   "level": "A1",
+   "theme": "Reading practice",
+   "goal": "Read longer A1 texts with a vocabulary list."
+  },
+  {
+   "week_no": 12,
+   "level": "A1",
+   "theme": "Second-source practice",
+   "goal": "Practise the same topics from a different textbook."
+  },
+  {
+   "week_no": 13,
+   "level": "A1",
+   "theme": "Everyday reading and extra units",
+   "goal": "Mix extra units with a real-world text."
+  },
+  {
+   "week_no": 14,
+   "level": "A1",
+   "theme": "A1 exam practice I",
+   "goal": "Complete one practice set under time limits."
+  },
+  {
+   "week_no": 15,
+   "level": "A1",
+   "theme": "A1 exam practice II",
+   "goal": "Targeted exam training on weak areas."
+  },
+  {
+   "week_no": 16,
+   "level": "A1",
+   "theme": "A1 review and gap week",
+   "goal": "Close gaps; decide if ready for A2."
+  },
+  {
+   "week_no": 17,
+   "level": "A2",
+   "theme": "Tenses overview",
+   "goal": "See present, perfect and preterite side by side."
+  },
+  {
+   "week_no": 18,
+   "level": "A2",
+   "theme": "Connectors",
+   "goal": "Join sentences with weil/dass/denn/aber."
+  },
+  {
+   "week_no": 19,
+   "level": "A2",
+   "theme": "Reflexive verbs",
+   "goal": "Use reflexive pronouns correctly."
+  },
+  {
+   "week_no": 20,
+   "level": "A2",
+   "theme": "als and wenn",
+   "goal": "Choose als vs wenn in subordinate clauses."
+  },
+  {
+   "week_no": 21,
+   "level": "A2",
+   "theme": "Genitiv",
+   "goal": "Recognise and form simple Genitiv phrases."
+  },
+  {
+   "week_no": 22,
+   "level": "A2",
+   "theme": "Comparison",
+   "goal": "Compare with Positiv/Komparativ/Superlativ."
+  },
+  {
+   "week_no": 23,
+   "level": "A2",
+   "theme": "Two-way prepositions",
+   "goal": "Choose Akkusativ/Dativ after Wechselpräpositionen."
+  },
+  {
+   "week_no": 24,
+   "level": "A2",
+   "theme": "Prepositions with verbs",
+   "goal": "Learn common verb + preposition pairs."
+  },
+  {
+   "week_no": 25,
+   "level": "A2",
+   "theme": "Relative clauses",
+   "goal": "Build relative clauses with the right pronoun."
+  },
+  {
+   "week_no": 26,
+   "level": "A2",
+   "theme": "Indirect questions",
+   "goal": "Report questions with ob and W-words."
+  },
+  {
+   "week_no": 27,
+   "level": "A2",
+   "theme": "Konjunktiv II",
+   "goal": "Polite requests and wishes."
+  },
+  {
+   "week_no": 28,
+   "level": "A2",
+   "theme": "Question articles",
+   "goal": "Use welcher/was für ein."
+  },
+  {
+   "week_no": 29,
+   "level": "A2",
+   "theme": "Second-source practice",
+   "goal": "Practise A2 topics from another coursebook."
+  },
+  {
+   "week_no": 30,
+   "level": "A2",
+   "theme": "Consolidation II",
+   "goal": "Review weeks 17–29; re-read class sheets."
+  },
+  {
+   "week_no": 31,
+   "level": "A2",
+   "theme": "A2 exam training",
+   "goal": "Practise exam task types."
+  },
+  {
+   "week_no": 32,
+   "level": "A2",
+   "theme": "A2 model test 1",
+   "goal": "Full timed model test."
+  },
+  {
+   "week_no": 33,
+   "level": "A2",
+   "theme": "A2 model test 2",
+   "goal": "Second model test and telc format."
+  },
+  {
+   "week_no": 34,
+   "level": "A2",
+   "theme": "A2 review and gap week",
+   "goal": "Close gaps; decide if ready for B1."
+  },
+  {
+   "week_no": 35,
+   "level": "B1",
+   "theme": "B1 kick-off: infinitive with zu",
+   "goal": "Form infinitive clauses with zu."
+  },
+  {
+   "week_no": 36,
+   "level": "B1",
+   "theme": "Past perfect",
+   "goal": "Use Plusquamperfekt in narration."
+  },
+  {
+   "week_no": 37,
+   "level": "B1",
+   "theme": "Connectors I",
+   "goal": "Master B1 connectors."
+  },
+  {
+   "week_no": 38,
+   "level": "B1",
+   "theme": "Paired connectors and je…desto",
+   "goal": "Use entweder…oder, sowohl…als auch, je…desto."
+  },
+  {
+   "week_no": 39,
+   "level": "B1",
+   "theme": "Genitive prepositions, n-declension",
+   "goal": "Handle wegen/trotz and n-nouns."
+  },
+  {
+   "week_no": 40,
+   "level": "B1",
+   "theme": "Passive with modal verbs; clause structure",
+   "goal": "Build passive and complex sentences."
+  },
+  {
+   "week_no": 41,
+   "level": "B1",
+   "theme": "Reading and phrases",
+   "goal": "Read B1 stories; collect set phrases."
+  },
+  {
+   "week_no": 42,
+   "level": "B1",
+   "theme": "Vocabulary building",
+   "goal": "Learn B1 vocabulary from two glossaries."
+  },
+  {
+   "week_no": 43,
+   "level": "B1",
+   "theme": "Coursebook progress",
+   "goal": "Steady coursebook work."
+  },
+  {
+   "week_no": 44,
+   "level": "B1",
+   "theme": "Coursebook progress",
+   "goal": "Steady coursebook work."
+  },
+  {
+   "week_no": 45,
+   "level": "B1",
+   "theme": "Review I",
+   "goal": "Re-read connector and tense sheets."
+  },
+  {
+   "week_no": 46,
+   "level": "B1",
+   "theme": "Coursebook progress",
+   "goal": "Steady coursebook work."
+  },
+  {
+   "week_no": 47,
+   "level": "B1",
+   "theme": "Speaking and writing phrases",
+   "goal": "Practise using Redemittel in your own sentences."
+  },
+  {
+   "week_no": 48,
+   "level": "B1",
+   "theme": "Coursebook progress",
+   "goal": "Steady coursebook work."
+  },
+  {
+   "week_no": 49,
+   "level": "B1",
+   "theme": "Review II",
+   "goal": "Re-read grammar sheets."
+  },
+  {
+   "week_no": 50,
+   "level": "B1",
+   "theme": "Vocabulary consolidation",
+   "goal": "Review all B1 words learned so far."
+  },
+  {
+   "week_no": 51,
+   "level": "B1",
+   "theme": "Coursebook progress",
+   "goal": "Steady coursebook work."
+  },
+  {
+   "week_no": 52,
+   "level": "B1",
+   "theme": "Year review and next plan",
+   "goal": "Review the year; decide how to extend the plan into B1 and B2."
+  }
+ ],
+ "items": [
+  {
+   "week_no": 1,
+   "position": 0,
+   "resource_path": "A1/A1 course Bangla/Class-01 (Das Alphabet).png",
+   "role": "lesson",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 30,
+   "note": "Image lesson: alphabet. Read aloud twice.",
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 1,
+   "position": 1,
+   "resource_path": "A1/A1 course Bangla/Class-04 (Abschied).png",
+   "role": "lesson",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 20,
+   "note": "Image lesson: farewells.",
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 1,
+   "position": 2,
+   "resource_path": "A1/Books/Menschen A1-1 KB -einfach.ir-.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": "Pick the first unit from the table of contents.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 1,
+   "position": 3,
+   "resource_path": "A1/Books/A1-Glossary-BookG-Rafi-Bhaiyapdf_241112_212649.pdf",
+   "role": "vocab",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 40,
+   "note": "Pick the first glossary section.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 2,
+   "position": 0,
+   "resource_path": "A1/A1 course Bangla/Class-05 (Die Wochentage).png",
+   "role": "lesson",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 20,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 2,
+   "position": 1,
+   "resource_path": "A1/A1 course Bangla/Class-06 (Die Monate).png",
+   "role": "lesson",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 20,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 2,
+   "position": 2,
+   "resource_path": "A1/A1 story Bangla/A1 Story Part 1.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 6,
+   "est_minutes": 30,
+   "note": "Read the story, note unknown words.",
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 2,
+   "position": 3,
+   "resource_path": "A1/Books/Menschen A1-1 KB -einfach.ir-.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": "Next unit after last week.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 3,
+   "position": 0,
+   "resource_path": "A1/A1 course Bangla/Class-10 (Ordinalzahlen).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 25,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 3,
+   "position": 1,
+   "resource_path": "A1/A1 course Bangla/Class-11 (Uhrzeit).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 5,
+   "est_minutes": 40,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 3,
+   "position": 2,
+   "resource_path": "A1/Books/Menschen A1-1 KB -einfach.ir-.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 4,
+   "position": 0,
+   "resource_path": "A1/A1 course Bangla/Class-15 (Sein und Haben Verb).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 4,
+   "position": 1,
+   "resource_path": "A1/A1 course Bangla/Class-16 (Verb Konjugation).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 4,
+   "position": 2,
+   "resource_path": "A1/Books/Menschen A1-1 KB -einfach.ir-.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 5,
+   "position": 0,
+   "resource_path": "A1/A1 course Bangla/Class-19 (Ja-Nein Frage).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 1,
+   "est_minutes": 20,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 5,
+   "position": 1,
+   "resource_path": "A1/A1 story Bangla/A1 Story Part 7.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 4,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 5,
+   "position": 2,
+   "resource_path": "A1/Books/Menschen A1-1 KB -einfach.ir-.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 5,
+   "position": 3,
+   "resource_path": "A1/Books/Grammatik_aktiv_Cornelsen.pdf",
+   "role": "reference",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 30,
+   "note": "Look up only the topics from this week.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 6,
+   "position": 0,
+   "resource_path": "A1/A1 course Bangla/Class-20 (Temporale Präpositionen).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 3,
+   "est_minutes": 35,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 6,
+   "position": 1,
+   "resource_path": "A1/A1 story Bangla/A1 Story Part 8.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 4,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 6,
+   "position": 2,
+   "resource_path": "A1/Books/Menschen A1-1 KB -einfach.ir-.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": "Finish the book over the next weeks.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 7,
+   "position": 0,
+   "resource_path": "A1/A1 course Bangla/Class-23 ( Case).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 1,
+   "est_minutes": 20,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 7,
+   "position": 1,
+   "resource_path": "A1/A1 course Bangla/Class-24 ( Nominativ Case).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 35,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 7,
+   "position": 2,
+   "resource_path": "A1/Books/Menschen A1-1 KB -einfach.ir-.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 8,
+   "position": 0,
+   "resource_path": "A1/A1 course Bangla/Class-26 (Akkusativ Präpositionen ).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 35,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 8,
+   "position": 1,
+   "resource_path": "A1/A1 story Bangla/A1 Story Part 9.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 4,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 8,
+   "position": 2,
+   "resource_path": "A1/Books/Menschen A1-2 KB -einfach.ir- (1).pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": "Start the second A1 coursebook.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 9,
+   "position": 0,
+   "resource_path": "A1/A1 course Bangla/Class-30 ( Satzbau).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 35,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 9,
+   "position": 1,
+   "resource_path": "A1/Books/Menschen A1-2 KB -einfach.ir- (1).pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 9,
+   "position": 2,
+   "resource_path": "A1/Books/Grammatik_aktiv_Cornelsen.pdf",
+   "role": "reference",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 10,
+   "position": 0,
+   "resource_path": "A1/A1 story Bangla/A1 Story Part 11.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 4,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 10,
+   "position": 1,
+   "resource_path": "A1/Books/Menschen A1-2 KB -einfach.ir- (1).pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 10,
+   "position": 2,
+   "resource_path": "A1/Books/Basic german Book (1).pdf",
+   "role": "reference",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 45,
+   "note": "Skim and pick revision topics.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 11,
+   "position": 0,
+   "resource_path": "A1/A1 story Bangla/A1 Story Part 12.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 4,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 11,
+   "position": 1,
+   "resource_path": "A1/Books/Netzwerk-neu-a1-kursbuchMain-Book(Marked).pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": "Second opinion on topics from the Menschen books.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 11,
+   "position": 2,
+   "resource_path": "A1/Books/Netzwerk neu A1 Bangla Glossar.pdf",
+   "role": "vocab",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 40,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 12,
+   "position": 0,
+   "resource_path": "A1/Books/Schritte plus neu A1.2.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 12,
+   "position": 1,
+   "resource_path": "A1/Books/Menschen A1-2 KB -einfach.ir- (1).pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 60,
+   "note": "Finish remaining units.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 13,
+   "position": 0,
+   "resource_path": "A1/Books/Momente A1.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 75,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 13,
+   "position": 1,
+   "resource_path": "A1/Books/Spektrum Deutsch A1-.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 75,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 13,
+   "position": 2,
+   "resource_path": "A1/Books/Zeitung BAS vom 22.03.2026.pdf",
+   "role": "reading",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 20,
+   "note": "Optional: skim headlines only; not A1 level.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 14,
+   "position": 0,
+   "resource_path": "A1/Books/fit1_uebungssatz_01 (1).pdf",
+   "role": "exam",
+   "start_page": 1,
+   "end_page": 52,
+   "est_minutes": 120,
+   "note": "Whole practice set (52 pages per metadata).",
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 14,
+   "position": 1,
+   "resource_path": "A1/Books/a1-loesungen-pdf (1).pdf",
+   "role": "exam",
+   "start_page": 1,
+   "end_page": 24,
+   "est_minutes": 45,
+   "note": "Answer key (inferred from filename — verify it matches the set).",
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 15,
+   "position": 0,
+   "resource_path": "A1/Books/a1-pr_e0816d6a52f313533a15f4f2cf4ecf33.pdf",
+   "role": "exam",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": "Choose one exam model.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 15,
+   "position": 1,
+   "resource_path": "A1/Books/pruefungstraining-a1.pdf",
+   "role": "exam",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": "Choose sections matching weak skills.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 15,
+   "position": 2,
+   "resource_path": "A1/Books/2003juv17556 (1).pdf",
+   "role": "reference",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 30,
+   "note": "Content not verified; open and decide whether it is useful.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 16,
+   "position": 0,
+   "resource_path": "A1/A1 course Bangla/Class-16 (Verb Konjugation).pdf",
+   "role": "review",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 20,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 16,
+   "position": 1,
+   "resource_path": "A1/A1 course Bangla/Class-30 ( Satzbau).pdf",
+   "role": "review",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 20,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 16,
+   "position": 2,
+   "resource_path": "A1/Books/Speak German In 90 Days Book (2).pdf",
+   "role": "reference",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 60,
+   "note": "Use for extra speaking phrases only.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 17,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-3 (Tense-Zeitform (Beispiel).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 17,
+   "position": 1,
+   "resource_path": "A2/Books/Menschen A2.1.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": "Start the A2 coursebook.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 18,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-4 (Konnektor).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 5,
+   "est_minutes": 45,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 18,
+   "position": 1,
+   "resource_path": "A2/Books/Menschen A2.1.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 19,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-5 (Reflexive Pronomen und Verb).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 4,
+   "est_minutes": 40,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 19,
+   "position": 1,
+   "resource_path": "A2/A2 story/Kapitel-6.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 19,
+   "position": 2,
+   "resource_path": "A2/Books/Menschen A2.1.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 20,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-8 (Nebensatz mit als und wenn).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 20,
+   "position": 1,
+   "resource_path": "A2/Books/Menschen A2.1.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 21,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-9 (Genitiv Case).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 3,
+   "est_minutes": 35,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 21,
+   "position": 1,
+   "resource_path": "A2/Books/Menschen A2.1.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 22,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-10 (Positiv,Komparativ).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 22,
+   "position": 1,
+   "resource_path": "A2/A2 story/Kapitel-8.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 4,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 22,
+   "position": 2,
+   "resource_path": "A2/Books/Menschen A2.1.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 75,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 23,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-13 (Wechselpräpositionen).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 3,
+   "est_minutes": 40,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 23,
+   "position": 1,
+   "resource_path": "A2/Books/Menschen A2.2.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": "Start the second A2 coursebook.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 24,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-15 (Modale Präpositionen).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 1,
+   "est_minutes": 20,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 24,
+   "position": 1,
+   "resource_path": "A2/A2 course Bangla/Class-16 (Verben mit Präpositionen).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 24,
+   "position": 2,
+   "resource_path": "A2/Books/Menschen A2.2.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 25,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-17 (Relativsatz und Relativ Pronomen).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 35,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 25,
+   "position": 1,
+   "resource_path": "A2/Books/Menschen A2.2.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 26,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-18 (Indirekte Fragesätze).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 35,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 26,
+   "position": 1,
+   "resource_path": "A2/Books/Menschen A2.2.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 27,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-19 (Konjunktiv II).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 5,
+   "est_minutes": 50,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 27,
+   "position": 1,
+   "resource_path": "A2/A2 story/Kapitel-11.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 27,
+   "position": 2,
+   "resource_path": "A2/Books/Menschen A2.2.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 75,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 28,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-21 (Interrogativ Artikel).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 28,
+   "position": 1,
+   "resource_path": "A2/Books/Schritte plus neu A2.1.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 29,
+   "position": 0,
+   "resource_path": "A2/Books/Schritte plus neu A2.1.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 29,
+   "position": 1,
+   "resource_path": "A2/Books/Menschen A2.2.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 60,
+   "note": "Finish remaining units.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 30,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-4 (Konnektor).pdf",
+   "role": "review",
+   "start_page": 1,
+   "end_page": 5,
+   "est_minutes": 25,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 30,
+   "position": 1,
+   "resource_path": "A2/A2 course Bangla/Class-19 (Konjunktiv II).pdf",
+   "role": "review",
+   "start_page": 1,
+   "end_page": 5,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 30,
+   "position": 2,
+   "resource_path": "A2/Books/Prüfungstraining A2.pdf",
+   "role": "exam",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 60,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 31,
+   "position": 0,
+   "resource_path": "A2/Books/Prüfungstraining A2.pdf",
+   "role": "exam",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 120,
+   "note": "Choose sections matching weak skills.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 32,
+   "position": 0,
+   "resource_path": "A2/Books/A2_model 01.pdf",
+   "role": "exam",
+   "start_page": 1,
+   "end_page": 48,
+   "est_minutes": 150,
+   "note": "Whole set (48 pages per metadata).",
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 33,
+   "position": 0,
+   "resource_path": "A2/Books/A2_model 02.pdf",
+   "role": "exam",
+   "start_page": 1,
+   "end_page": 48,
+   "est_minutes": 150,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 33,
+   "position": 1,
+   "resource_path": "A2/Books/telc - deutsch - a2.pdf",
+   "role": "exam",
+   "start_page": 1,
+   "end_page": 45,
+   "est_minutes": 60,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 34,
+   "position": 0,
+   "resource_path": "A2/A2 course Bangla/Class-13 (Wechselpräpositionen).pdf",
+   "role": "review",
+   "start_page": 1,
+   "end_page": 3,
+   "est_minutes": 25,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 34,
+   "position": 1,
+   "resource_path": "A2/A2 course Bangla/Class-16 (Verben mit Präpositionen).pdf",
+   "role": "review",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 25,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 35,
+   "position": 0,
+   "resource_path": "B1/B1 course Bangla/Class-1 (Infinitive mit zu).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 35,
+   "position": 1,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": "Start the B1 coursebook.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 35,
+   "position": 2,
+   "resource_path": "B1/Books/Goethe Zertifiket B1 Wortliste bangla.pdf",
+   "role": "vocab",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 30,
+   "note": "Pick the first word-list section.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 36,
+   "position": 0,
+   "resource_path": "B1/B1 course Bangla/Class-4 (Plusquamperfekt).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 36,
+   "position": 1,
+   "resource_path": "B1/B1 story/Kapitel-1.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 3,
+   "est_minutes": 35,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 36,
+   "position": 2,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 90,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 37,
+   "position": 0,
+   "resource_path": "B1/B1 course Bangla/Class-5 (Konnektoren ).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 3,
+   "est_minutes": 40,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 37,
+   "position": 1,
+   "resource_path": "B1/B1 course Bangla/Class-11 (Konnektoren).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 37,
+   "position": 2,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 75,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 38,
+   "position": 0,
+   "resource_path": "B1/B1 course Bangla/Class-6 (Zweiteilige Konnektoren).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 3,
+   "est_minutes": 40,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 38,
+   "position": 1,
+   "resource_path": "B1/B1 course Bangla/Class-7 (Je..., desto umso).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 1,
+   "est_minutes": 20,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 38,
+   "position": 2,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 75,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 39,
+   "position": 0,
+   "resource_path": "B1/B1 course Bangla/Class-8 (Genitiv Präpositionen).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 39,
+   "position": 1,
+   "resource_path": "B1/B1 course Bangla/Class-9 (N-Deklination).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 3,
+   "est_minutes": 35,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 39,
+   "position": 2,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 75,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 40,
+   "position": 0,
+   "resource_path": "B1/B1 course Bangla/Class-13 ( Passiv mit Modalverb).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 40,
+   "position": 1,
+   "resource_path": "B1/B1 course Bangla/Class-14 (Satzstruktur Verb, Nomen, Adverbien).pdf",
+   "role": "lesson",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 40,
+   "position": 2,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 75,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 41,
+   "position": 0,
+   "resource_path": "B1/B1 story/Kapitel-2.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 41,
+   "position": 1,
+   "resource_path": "B1/B1 story/Kapitel-3.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 41,
+   "position": 2,
+   "resource_path": "B1/Books/Redemittels B1 Alle.pdf",
+   "role": "reference",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 40,
+   "note": "Pick the sections for speaking and writing.",
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 42,
+   "position": 0,
+   "resource_path": "Vocabulary/B1 Bangla Glossar.pdf",
+   "role": "vocab",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 60,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 42,
+   "position": 1,
+   "resource_path": "B1/Books/Goethe Zertifiket B1 Wortliste bangla.pdf",
+   "role": "vocab",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 60,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 42,
+   "position": 2,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 60,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 43,
+   "position": 0,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 120,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 43,
+   "position": 1,
+   "resource_path": "B1/B1 story/Kapitel-4.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 44,
+   "position": 0,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 120,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 44,
+   "position": 1,
+   "resource_path": "B1/B1 story/Kapitel-7.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 45,
+   "position": 0,
+   "resource_path": "B1/B1 course Bangla/Class-5 (Konnektoren ).pdf",
+   "role": "review",
+   "start_page": 1,
+   "end_page": 3,
+   "est_minutes": 25,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 45,
+   "position": 1,
+   "resource_path": "B1/B1 course Bangla/Class-6 (Zweiteilige Konnektoren).pdf",
+   "role": "review",
+   "start_page": 1,
+   "end_page": 3,
+   "est_minutes": 25,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 45,
+   "position": 2,
+   "resource_path": "B1/B1 course Bangla/Class-4 (Plusquamperfekt).pdf",
+   "role": "review",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 20,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 46,
+   "position": 0,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 120,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 46,
+   "position": 1,
+   "resource_path": "B1/B1 story/Kapitel-12.pdf",
+   "role": "story",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 30,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 47,
+   "position": 0,
+   "resource_path": "B1/Books/Redemittels B1 Alle.pdf",
+   "role": "reference",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 60,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 47,
+   "position": 1,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 60,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 48,
+   "position": 0,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 120,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 49,
+   "position": 0,
+   "resource_path": "B1/B1 course Bangla/Class-13 ( Passiv mit Modalverb).pdf",
+   "role": "review",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 25,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 49,
+   "position": 1,
+   "resource_path": "B1/B1 course Bangla/Class-14 (Satzstruktur Verb, Nomen, Adverbien).pdf",
+   "role": "review",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 25,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 49,
+   "position": 2,
+   "resource_path": "B1/B1 course Bangla/Class-1 (Infinitive mit zu).pdf",
+   "role": "review",
+   "start_page": 1,
+   "end_page": 2,
+   "est_minutes": 20,
+   "note": null,
+   "needs_page_selection": false
+  },
+  {
+   "week_no": 50,
+   "position": 0,
+   "resource_path": "B1/Books/Goethe Zertifiket B1 Wortliste bangla.pdf",
+   "role": "vocab",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 60,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 50,
+   "position": 1,
+   "resource_path": "Vocabulary/B1 Bangla Glossar.pdf",
+   "role": "vocab",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 60,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 51,
+   "position": 0,
+   "resource_path": "B1/Books/Netzwerk B1 kursbuch-neu_kupdf.net.pdf",
+   "role": "coursebook",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 120,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 52,
+   "position": 0,
+   "resource_path": "B1/Books/Redemittels B1 Alle.pdf",
+   "role": "review",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 40,
+   "note": null,
+   "needs_page_selection": true
+  },
+  {
+   "week_no": 52,
+   "position": 1,
+   "resource_path": "B2/Schreibhen B1/Schreiben B2 Goethe 2.pdf",
+   "role": "reference",
+   "start_page": null,
+   "end_page": null,
+   "est_minutes": 30,
+   "note": "Look ahead only; B2 is outside the first-year target.",
+   "needs_page_selection": true
+  }
+ ]
+}

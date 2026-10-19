@@ -1,79 +1,92 @@
-import { useState, type ReactNode } from 'react';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { CalendarRange, History, Home, Languages, Library, LogOut, Megaphone, MessageCircle, Monitor, Moon, MoreHorizontal, NotebookPen, Plus, Settings, Sun, WifiOff } from 'lucide-react';
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { CalendarRange, Download, History, Home, Languages, Library, LogOut, MessageCircle, Monitor, Moon, Plus, Settings, Sun, WifiOff, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTheme } from '@/hooks/useTheme';
 import { useLiveStatus } from '@/hooks/useRealtime';
 import { useQuick } from '@/hooks/useQuick';
 import { useTabDots } from '@/hooks/useTabDots';
-import { usePlan, useSessions } from '@/api/queries';
+import { useSessions } from '@/api/queries';
 import { Avatar, Dialog, Dot, cx } from '@/components/ui/ui';
 import { UpdateHost } from '@/components/UpdateDialog';
 import { PetDock } from '@/pet/PetDock';
-import { planWeekNumber } from '@/lib/domain/dates';
-import type { TabName } from '@/types/db';
-import { useMemo } from 'react';
+import { useInstall } from '@/pwa';
 
-interface Item { to: string; label: string; icon: ReactNode; tab?: TabName }
-const ic = (n: ReactNode) => n;
-const ITEMS: Item[] = [
-  { to: '/', label: 'Today', icon: ic(<Home size={19} aria-hidden />) }, { to: '/plan', label: 'Plan', icon: <CalendarRange size={19} aria-hidden />, tab: 'plan' }, { to: '/words', label: 'Words', icon: <Languages size={19} aria-hidden />, tab: 'words' },
-  { to: '/chat', label: 'Chat', icon: <MessageCircle size={19} aria-hidden />, tab: 'chat' }, { to: '/notes', label: 'Notes', icon: <NotebookPen size={19} aria-hidden />, tab: 'notes' }, { to: '/library', label: 'Library', icon: <Library size={19} aria-hidden />, tab: 'library' },
-  { to: '/notices', label: 'Notices', icon: <Megaphone size={19} aria-hidden />, tab: 'notices' }, { to: '/log', label: 'History', icon: <History size={19} aria-hidden /> }, { to: '/settings', label: 'Settings', icon: <Settings size={19} aria-hidden /> },
-];
+const TALK = ['/chat', '/notes', '/notices'];
+interface Item { to: string; label: string; icon: ReactNode; dot?: number; active?: (p: string) => boolean }
 
 export function Shell() {
-  const { me, signOut } = useAuth(); const { pref, setPref } = useTheme(); const live = useLiveStatus(); const quick = useQuick(); const dots = useTabDots(); const loc = useLocation();
-  const { data: plan } = usePlan(); const { data: sessions } = useSessions();
-  const [more, setMore] = useState(false); const [add, setAdd] = useState(false);
-  const week = plan ? planWeekNumber(plan.start_date, new Date()) : null;
-  const shared = useMemo(() => (sessions ?? []).reduce((a, s) => a + s.minutes, 0), [sessions]);
+  const { me, signOut } = useAuth(); const { pref, setPref } = useTheme(); const live = useLiveStatus(); const quick = useQuick(); const dots = useTabDots(); const loc = useLocation(); const nav = useNavigate();
+  const { data: sessions } = useSessions(); const inst = useInstall();
+  const [add, setAdd] = useState(false); const [menu, setMenu] = useState(false); const [guide, setGuide] = useState(false);
+  const [banner, setBanner] = useState(() => { try { return localStorage.getItem('gd-install-dismissed') !== '1'; } catch { return true; } });
+  const shared = useMemo(() => (sessions ?? []).reduce((a, s) => a + s.minutes, 0), [sessions]); const menuRef = useRef<HTMLDivElement>(null);
   const ThemeIcon = pref === 'dark' ? Moon : pref === 'light' ? Sun : Monitor; const next = pref === 'system' ? 'light' : pref === 'light' ? 'dark' : 'system';
-  const link = (i: Item, cls: string): ReactNode => <NavLink key={i.to} to={i.to} end={i.to === '/'} className={({ isActive }) => cx(cls, isActive && 'on')}><span className="nav-ic">{i.icon}</span><span className="nav-tx">{i.label}</span><Dot n={dots[i.tab as TabName]} /></NavLink>;
-  const moreDots = (dots.notes ?? 0) + (dots.library ?? 0) + (dots.notices ?? 0);
-  const current = ITEMS.find((i) => (i.to === '/' ? loc.pathname === '/' : loc.pathname.startsWith(i.to)));
+  const talkDots = (dots.chat ?? 0) + (dots.notes ?? 0) + (dots.notices ?? 0);
+  const items: Item[] = [
+    { to: '/', label: 'Today', icon: <Home size={20} aria-hidden /> }, { to: '/plan', label: 'Plan', icon: <CalendarRange size={20} aria-hidden />, dot: dots.plan },
+    { to: '/words', label: 'Words', icon: <Languages size={20} aria-hidden />, dot: dots.words }, { to: '/library', label: 'Library', icon: <Library size={20} aria-hidden />, dot: dots.library },
+    { to: '/chat', label: 'Talk', icon: <MessageCircle size={20} aria-hidden />, dot: talkDots, active: (p) => TALK.some((t) => p.startsWith(t)) },
+  ];
+  const link = (i: Item, cls: string): ReactNode => (
+    <NavLink key={i.to} to={i.to} end={i.to === '/'} className={({ isActive }) => cx(cls, (i.active ? i.active(loc.pathname) : isActive) && 'on')}><span className="nav-ic">{i.icon}</span><span className="nav-tx">{i.label}</span><Dot n={i.dot} /></NavLink>
+  );
+  useEffect(() => { setMenu(false); }, [loc.pathname]);
+  useEffect(() => { if (!menu) return; const h = (e: MouseEvent) => { if (!menuRef.current?.contains(e.target as Node)) setMenu(false); }; const k = (e: KeyboardEvent) => { if (e.key === 'Escape') setMenu(false); }; document.addEventListener('mousedown', h); document.addEventListener('keydown', k); return () => { document.removeEventListener('mousedown', h); document.removeEventListener('keydown', k); }; }, [menu]);
+  const showBanner = banner && !inst.installed && (inst.canPrompt || inst.ios);
 
   return (
     <div className="shell">
       <a className="skip" href="#main">Skip to content</a>
-      <aside className="side" aria-label="Sidebar">
-        <div className="brand"><span className="brand-mark"><i /><i /></span><span className="brand-name">German Duo</span></div>
-        <nav className="side-nav" aria-label="Main">{ITEMS.map((i) => link(i, 'side-item'))}</nav>
-        <div className="side-foot">
-          <button className="btn btn-primary btn-block" onClick={() => setAdd(true)}><Plus size={17} aria-hidden /> Quick add</button>
-          <div className="side-user">{me && <Avatar code={me.code} accent={me.accent} size={22} label={me.display_name} />}<span className="grow side-name">{me?.display_name}</span>
-            <button className="icon-btn" aria-label={`Theme: ${pref}. Switch to ${next}`} onClick={() => setPref(next)}><ThemeIcon size={17} aria-hidden /></button>
-            <button className="icon-btn" aria-label="Sign out" onClick={() => void signOut()}><LogOut size={17} aria-hidden /></button></div>
-          <span className={cx('live', `live-${live}`)} role="status"><i aria-hidden />{live === 'live' ? 'Live sync' : live === 'connecting' ? 'Connecting…' : 'Offline'}</span>
-        </div>
-      </aside>
-
-      <div className="main-col">
-        <header className="topbar">
-          <div><p className="crumb">{week && week >= 1 ? `Week ${week}` : 'German Duo'}</p><p className="topbar-title">{current?.label ?? 'German Duo'}</p></div>
-          <div className="topbar-right"><span className={cx('live live-sm', `live-${live}`)} role="status" aria-label={`Sync: ${live}`}><i aria-hidden /></span>
-            <button className="btn btn-primary btn-sm topbar-add" onClick={() => setAdd(true)}><Plus size={16} aria-hidden /> Add</button></div>
+      <div id="app-content" className="app">
+        <header className="top">
+          <div className="top-in">
+            <NavLink to="/" className="brand" aria-label="German Duo, home"><span className="brand-mark"><i /><i /></span><span className="brand-name">German Duo</span></NavLink>
+            <nav className="top-nav" aria-label="Main">{items.map((i) => link(i, 'top-item'))}</nav>
+            <div className="top-right">
+              <span className={cx('live', `live-${live}`)} role="status" aria-label={`Sync: ${live}`}><i aria-hidden /><span className="live-tx">{live === 'live' ? 'Live' : live === 'connecting' ? 'Connecting' : 'Offline'}</span></span>
+              <button className="top-add" onClick={() => setAdd(true)}><Plus size={17} aria-hidden /><span>Add</span></button>
+              <div className="acct" ref={menuRef}>
+                <button className="acct-btn" onClick={() => setMenu((m) => !m)} aria-haspopup="menu" aria-expanded={menu} aria-label="Account menu">{me && <Avatar code={me.code} accent={me.accent} size={22} label={me.display_name} />}</button>
+                {menu && (
+                  <div className="acct-menu" role="menu">
+                    <p className="acct-who">{me?.display_name}</p>
+                    <button role="menuitem" onClick={() => nav('/log')}><History size={16} aria-hidden /> History &amp; undo</button>
+                    <button role="menuitem" onClick={() => nav('/settings')}><Settings size={16} aria-hidden /> Settings</button>
+                    <button role="menuitem" onClick={() => setPref(next)}><ThemeIcon size={16} aria-hidden /> Theme: {pref}</button>
+                    {!inst.installed && <button role="menuitem" onClick={() => { setMenu(false); if (inst.canPrompt) void inst.install(); else setGuide(true); }}><Download size={16} aria-hidden /> Install app</button>}
+                    <button role="menuitem" onClick={() => void signOut()}><LogOut size={16} aria-hidden /> Sign out</button>
+                  </div>)}
+              </div>
+            </div>
+          </div>
         </header>
         {live === 'offline' && <div className="banner" role="alert"><WifiOff size={15} aria-hidden /> Offline — changes can’t be saved right now. Reconnecting automatically.</div>}
-        <main id="main" tabIndex={-1} className="page" data-path={loc.pathname}><Outlet /></main>
+        {showBanner && (
+          <div className="install" role="region" aria-label="Install the app"><span className="grow"><b>Install German Duo</b> on your phone — it opens like a normal app.</span>
+            <button className="install-go" onClick={() => { if (inst.canPrompt) void inst.install(); else setGuide(true); }}>{inst.canPrompt ? 'Install' : 'How?'}</button>
+            <button className="icon-btn icon-btn-sm" aria-label="Hide" onClick={() => { setBanner(false); try { localStorage.setItem('gd-install-dismissed', '1'); } catch { /* ignore */ } }}><X size={16} aria-hidden /></button></div>)}
+        <div className="scroll"><main id="main" tabIndex={-1} className="page" data-path={loc.pathname}><Outlet /></main></div>
+        <nav className="bar" aria-label="Main mobile">{items.map((i) => link(i, 'bar-item'))}</nav>
       </div>
+      <div id="layer" />
 
-      <nav className="bar" aria-label="Main mobile">{[ITEMS[0], ITEMS[1], ITEMS[2], ITEMS[3]].map((i) => link(i, 'bar-item'))}
-        <button className={cx('bar-item', more && 'on')} onClick={() => setMore(true)} aria-haspopup="dialog"><span className="nav-ic"><MoreHorizontal size={19} aria-hidden /></span><span className="nav-tx">More</span><Dot n={moreDots} /></button></nav>
-
-      <Dialog open={more} onClose={() => setMore(false)} title="More">
-        <ul className="plain-list menu">{ITEMS.slice(4).map((i) => <li key={i.to}><NavLink to={i.to} className="menu-item" onClick={() => setMore(false)}><span className="row">{i.icon}{i.label}</span><Dot n={i.tab ? dots[i.tab] : undefined} /></NavLink></li>)}
-          <li><button className="menu-item" onClick={() => { setMore(false); setPref(next); }}><span className="row"><ThemeIcon size={19} aria-hidden />Theme: {pref}</span></button></li>
-          <li><button className="menu-item" onClick={() => { setMore(false); void signOut(); }}><span className="row"><LogOut size={19} aria-hidden />Sign out</span></button></li></ul>
-      </Dialog>
-      <Dialog open={add} onClose={() => setAdd(false)} title="Quick add">
+      <Dialog open={add} onClose={() => setAdd(false)} title="Add">
         <ul className="plain-list menu">
           <li><button className="menu-item" onClick={() => { setAdd(false); quick.openSession(); }}>Log study time</button></li>
-          <li><button className="menu-item" onClick={() => { setAdd(false); quick.openWord(); }}>Add a word</button></li>
+          <li><button className="menu-item" onClick={() => { setAdd(false); nav('/words'); }}>Add words (quick)</button></li>
           <li><button className="menu-item" onClick={() => { setAdd(false); quick.openNote('question'); }}>Ask a question</button></li>
           <li><button className="menu-item" onClick={() => { setAdd(false); quick.openNote('note'); }}>Write a note</button></li>
           <li><NavLink className="menu-item" to="/plan?new=1" onClick={() => setAdd(false)}>New goal</NavLink></li>
         </ul>
+      </Dialog>
+      <Dialog open={guide} onClose={() => setGuide(false)} title="Install on your phone">
+        <ol className="how-steps big">
+          <li><b>iPhone / iPad (Safari):</b> tap the Share button, then “Add to Home Screen”, then “Add”.</li>
+          <li><b>Android (Chrome):</b> open the ⋮ menu, then “Install app” (or “Add to Home screen”).</li>
+          <li><b>Computer (Chrome / Edge):</b> click the install icon at the right of the address bar.</li>
+        </ol>
+        <p className="small muted">After installing, it opens full screen with its own icon and splash screen, and the app itself works offline (your data needs a connection).</p>
       </Dialog>
       <UpdateHost />
       <PetDock totalMinutes={shared} />

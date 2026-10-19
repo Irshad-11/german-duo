@@ -1,5 +1,6 @@
+import { createPortal } from 'react-dom';
 import { forwardRef, useEffect, useId, useRef, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from 'react';
-import { Loader2, X } from 'lucide-react';
+import { ArrowLeft, Loader2, X } from 'lucide-react';
 
 export function cx(...parts: Array<string | false | null | undefined>): string { return parts.filter(Boolean).join(' '); }
 
@@ -130,4 +131,41 @@ export function Ring({ value, size = 64, stroke = 7, accent, label, children }: 
       <span className="ring-c">{children ?? <b>{v}%</b>}</span>
     </span>
   );
+}
+
+/* ---------- full-page forms (no pop-ups) ----------
+   A form opens as its own page layer with a Back arrow. The browser/phone Back button closes it too (it adds one history entry),
+   and the page underneath keeps its scroll position. */
+let layerId = 0; const activeLayers = new Set<number>(); let pendingBack: { id: number; timer: number } | null = null;
+const gdLayerOf = (): number => (window.history.state as { gdLayer?: number } | null)?.gdLayer ?? 0;
+export function FormPage({ open, onClose, title, children, footer, wide }: { open: boolean; onClose: () => void; title: string; children: ReactNode; footer?: ReactNode; wide?: boolean }) {
+  const ref = useRef<HTMLDivElement>(null); const closeRef = useRef(onClose); closeRef.current = onClose; const titleId = useId();
+  useEffect(() => {
+    if (!open) return;
+    // React StrictMode (dev) mounts, unmounts and re-mounts an effect immediately. A pending "go back" from the fake unmount is cancelled and its history entry reused,
+    // otherwise the browser would pop the entry we just pushed and the page would close the instant it opened.
+    let id: number;
+    if (pendingBack && gdLayerOf() === pendingBack.id) { id = pendingBack.id; window.clearTimeout(pendingBack.timer); pendingBack = null; }
+    else { id = ++layerId; window.history.pushState({ ...((window.history.state as object | null) ?? {}), gdLayer: id }, ''); }
+    activeLayers.add(id); let popped = false;
+    document.getElementById('app-content')?.setAttribute('inert', ''); document.body.classList.add('has-layer');
+    const onPop = () => { if (gdLayerOf() < id) { popped = true; closeRef.current(); } };
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape' && Math.max(...activeLayers) === id) closeRef.current(); };
+    window.addEventListener('popstate', onPop); window.addEventListener('keydown', onKey);
+    if (ref.current && !ref.current.contains(document.activeElement)) ref.current.focus({ preventScroll: true });
+    return () => {
+      window.removeEventListener('popstate', onPop); window.removeEventListener('keydown', onKey); activeLayers.delete(id);
+      if (activeLayers.size === 0) { document.getElementById('app-content')?.removeAttribute('inert'); document.body.classList.remove('has-layer'); }
+      if (popped) return;                                   // the user pressed Back: the entry is already gone
+      const timer = window.setTimeout(() => { if (pendingBack?.id === id) { pendingBack = null; if (!activeLayers.has(id)) window.history.back(); } }, 60);
+      pendingBack = { id, timer };                          // closed by the app (Save/Cancel): remove our history entry shortly, unless it is a StrictMode re-mount
+    };
+  }, [open]);
+  if (!open) return null;
+  return createPortal(
+    <div className={cx('layer', wide && 'layer-wide')} role="region" aria-labelledby={titleId} ref={ref} tabIndex={-1}>
+      <header className="layer-head"><button className="back" onClick={() => closeRef.current()}><ArrowLeft size={18} aria-hidden /> Back</button><h2 id={titleId}>{title}</h2></header>
+      <div className="layer-body"><div className="layer-inner">{children}</div></div>
+      {footer && <footer className="layer-foot"><div className="layer-inner row end">{footer}</div></footer>}
+    </div>, document.getElementById('layer') ?? document.body);
 }

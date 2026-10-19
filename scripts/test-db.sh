@@ -9,4 +9,5 @@ run() { psql -v ON_ERROR_STOP=1 -q -o /dev/null -d "$DB" -f "$1"; }
 run supabase/tests/00_stub_supabase.sql
 for f in supabase/migrations/*.sql; do echo "migrate: $f"; run "$f"; done
 run supabase/tests/10_rls.test.sql
+run supabase/tests/20_v1_1.test.sql
 echo "DB tests finished"

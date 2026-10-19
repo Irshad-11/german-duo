@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Button, Chip, Dialog, Field, Input, Segmented, Select, Textarea } from '@/components/ui/ui';
+import { Button, Chip, Dialog, FormPage, Field, Input, Segmented, Select, Textarea } from '@/components/ui/ui';
 import { addWord, createNote, logSession, updateWord, type WordInput } from '@/api/mutations';
 import { useGoalResources, useGoals, useVocab } from '@/api/queries';
 import { useRun } from '@/hooks/useRun';
@@ -34,7 +34,7 @@ function defaults(w: VocabWord | null, seed?: string): WordForm {
 const parseTags = (s: string): string[] => [...new Set(s.split(/[,#\n]/).map((t) => t.trim().toLowerCase()).filter(Boolean))].slice(0, 12);
 
 export function WordDialog({ open, word, seed, onClose }: { open: boolean; word: VocabWord | null; seed?: string; onClose: () => void }) {
-  return <Dialog open={open} onClose={onClose} title={word ? 'Edit word' : 'Add a word'} wide>{open && <WordFormBody word={word} seed={seed} onClose={onClose} />}</Dialog>;
+  return <FormPage open={open} onClose={onClose} title={word ? 'Edit word' : 'Add a word'} wide>{open && <WordFormBody word={word} seed={seed} onClose={onClose} />}</FormPage>;
 }
 
 function WordFormBody({ word, seed, onClose }: { word: VocabWord | null; seed?: string; onClose: () => void }) {

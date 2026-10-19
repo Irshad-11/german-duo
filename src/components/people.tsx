@@ -1,7 +1,7 @@
-import { Folder } from 'lucide-react';
+import { Folder, MessageCircleQuestion } from 'lucide-react';
 import { Avatar } from '@/components/ui/ui';
 import { STATUS_BY_VALUE } from '@/lib/domain/status';
-import { measure } from '@/lib/domain/progress';
+import { appliesTo, isReadyForQuestions, measure } from '@/lib/domain/progress';
 import { folderColor, folderCrumbs, categoryLabel } from '@/lib/domain/folders';
 import type { GoalProgress, GoalResource, Learner, Level, ResourceStatus } from '@/types/db';
 
@@ -9,6 +9,15 @@ const GLYPH: Record<ResourceStatus, string> = { not_started: '○', ready: '○'
 export function StatusMark({ status }: { status: ResourceStatus }) {
   const m = STATUS_BY_VALUE[status];
   return <span className={`st st-${m.tone}`}><b aria-hidden>{GLYPH[status]}</b> {m.label}</span>;
+}
+
+/** “Finished properly — ask me about it.” Shown next to a finished task. */
+export function ReadyBadge({ short }: { short?: boolean }) {
+  return <span className="rq-badge" title="Finished properly — you can ask about this now"><MessageCircleQuestion size={12} aria-hidden /> {short ? 'Ready' : 'Ready for questions'}</span>;
+}
+/** “Only for IR” — a task that is not meant for both. */
+export function OnlyFor({ learner }: { learner: Learner | undefined }) {
+  return <span className="only-for" title="This task is only for one person">Only for {learner?.display_name ?? 'one person'}</span>;
 }
 
 /** Original folder location, coloured by level. */
@@ -27,10 +36,11 @@ export function MiniBar({ pct, accent }: { pct: number | null; accent: 'blue' | 
 
 /** One learner's state on one assignment, in a single compact cell. */
 export function PersonCell({ learner, r, p }: { learner: Learner; r: GoalResource; p?: GoalProgress }) {
+  if (!appliesTo(r, learner.id)) return <div className="pcell"><span className="small muted">Not for {learner.display_name}</span></div>;
   const m = measure(r, p);
   return (
     <div className="pcell">
-      <StatusMark status={p?.status ?? 'not_started'} />
+      <StatusMark status={p?.status ?? 'not_started'} />{p?.status === 'completed' && isReadyForQuestions(p) && <ReadyBadge />}
       <MiniBar pct={m.pct} accent={learner.accent} />
       <span className="small muted">
         {m.pct === null ? '' : `${m.pct}%`}{m.total && m.unit === 'pages' ? ` · ${m.done}/${m.total} p` : m.total ? ` · ${m.done}/${m.total} ${m.unit}` : ''}{p?.current_page && p.status !== 'completed' ? ` · at p.${p.current_page}` : ''}{p?.minutes_total ? ` · ${p.minutes_total}m` : ''}

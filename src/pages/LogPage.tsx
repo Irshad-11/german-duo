@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useChangeLog } from '@/api/queries';
 import { useWho } from '@/hooks/useWho';
 import { Button, EmptyState, ErrorState, Input, Segmented, SkeletonCards } from '@/components/ui/ui';
+import { Page } from '@/components/Page';
 import { ChangeList } from '@/components/ChangeList';
 import { AREAS, TABLE_TAB } from '@/lib/domain/changelog';
 import type { TabName } from '@/types/db';
@@ -16,8 +17,7 @@ export default function LogPage() {
   if (log.isError) return <ErrorState message={(log.error as Error).message} onRetry={() => void log.refetch()} />;
   if (log.isLoading) return <SkeletonCards n={3} />;
   return (
-    <div className="stack-lg">
-      <div><h1>Log</h1><p className="muted">Every change by either of us is recorded here with what changed. <b>Revert</b> puts the earlier value back (and is logged too); <b>Restore</b> brings back something deleted. Chat messages are not part of the log.</p></div>
+    <Page kicker="Everything either of us changed" title="History" lead="Revert puts the earlier value back (and is logged too); Restore brings back something deleted. Chat messages are not part of the history.">
       <div className="row between wrap">
         <Segmented<string> label="Person" value={person} onChange={setPerson} options={[{ value: 'all', label: 'Both' }, ...who.learners.map((l) => ({ value: l.id, label: l.code }))]} />
         <Input aria-label="Search the log" className="input-search" placeholder="Search" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -25,6 +25,6 @@ export default function LogPage() {
       <div className="chips" role="group" aria-label="Area">{AREAS.map((a) => <button key={a.value} className={`chip ${area === a.value ? 'chip-on' : ''}`} aria-pressed={area === a.value} onClick={() => setArea(a.value)}>{a.label}</button>)}</div>
       {list.length === 0 ? <EmptyState title="Nothing here">No changes match these filters yet.</EmptyState> : <ChangeList entries={list} />}
       {(log.data?.length ?? 0) >= limit && <div><Button onClick={() => setLimit((n) => n + 150)}>Load older entries</Button></div>}
-    </div>
+    </Page>
   );
 }

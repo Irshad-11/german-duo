@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import { Copy, ExternalLink, FolderOpen, Search } from 'lucide-react';
 import { Avatar, Button, cx } from '@/components/ui/ui';
-import { FolderTag, MiniBar } from '@/components/people';
+import { FolderTag, MiniBar, OnlyFor, ReadyBadge } from '@/components/people';
 import { DRIVE_ROOT_URL, driveSearchUrl } from '@/lib/config';
-import { measure } from '@/lib/domain/progress';
+import { appliesTo, isReadyForQuestions, measure } from '@/lib/domain/progress';
 import { SIMPLE_LABEL, simpleOf } from '@/lib/domain/status';
 import { pageRangeLabel } from '@/lib/domain/folders';
 import { formatDay, formatMinutes } from '@/lib/domain/dates';
@@ -32,12 +32,12 @@ export function MaterialLinks({ url, filename, title, folder, compact }: { url: 
 export function PeopleLines({ r, progress, learners }: { r: GoalResource; progress: GoalProgress[]; learners: Learner[] }) {
   return (
     <ul className="plain-list plines">
-      {learners.map((l) => {
+      {learners.filter((l) => appliesTo(r, l.id)).map((l) => {
         const p = progress.find((x) => x.goal_resource_id === r.id && x.learner_id === l.id); const m = measure(r, p); const s = simpleOf(p?.status ?? 'not_started');
         return (
           <li key={l.id} className="pline">
             <Avatar code={l.code} accent={l.accent} size={15} label={l.display_name} /> <span className="pline-name">{l.display_name}</span>
-            <span className={cx('pline-state', `s-${s}`)}>{SIMPLE_LABEL[s]}</span>
+            <span className={cx('pline-state', `s-${s}`)}>{SIMPLE_LABEL[s]}</span>{s === 'finished' && isReadyForQuestions(p) && <ReadyBadge />}
             <MiniBar pct={m.pct} accent={l.accent} />
             <span className="small muted">{m.pct !== null ? `${m.pct}%` : ''}{p?.current_page && s === 'studying' ? ` · page ${p.current_page}` : ''}{p?.minutes_total ? ` · ${formatMinutes(p.minutes_total)}` : ''}</span>
             {p?.note && <span className="pnote small">“{p.note.length > 70 ? p.note.slice(0, 67) + '…' : p.note}”</span>}
@@ -53,7 +53,7 @@ export function MaterialCard({ r, goal, progress, learners, onUpdate }: { r: Goa
   return (
     <article className="mcard" style={{ ['--tag' as string]: r.level ? `var(--lvl-${r.level.toLowerCase()})` : 'var(--lvl-all)' }}>
       <header className="mcard-head">
-        <div className="grow"><h3 className="mcard-title">{r.title}</h3>
+        <div className="grow"><h3 className="mcard-title">{r.title}{r.assignee_id && <> <OnlyFor learner={learners.find((l) => l.id === r.assignee_id)} /></>}</h3>
           <p className="small muted">{pageRangeLabel(r.start_page, r.end_page, r.page_count)}{r.est_minutes ? ` · about ${formatMinutes(r.est_minutes)}` : ''}{goal ? ` · ${goal.title}, due ${formatDay(goal.deadline)}` : ''}</p></div>
         <FolderTag level={r.level} folder={r.source_folder} />
       </header>

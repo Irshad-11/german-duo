@@ -24,11 +24,11 @@ export function reviewsThisWeek(log: VocabReviewLog[], learnerId: string, now: D
 export function daysBetweenISO(a: string, b: string): number { return Math.round((parseISO(b).getTime() - parseISO(a).getTime()) / 86400000); }
 
 /** Highest curriculum week whose goal this learner has fully completed (null-safe; 0 when none). Used by the journey track. */
-export function reachedCurriculumWeek(goals: Array<{ id: string; curriculum_week: number | null; status: string }>, resources: Array<{ id: string; goal_id: string }>, progress: Array<{ goal_resource_id: string; learner_id: string; status: string }>, learnerId: string): number {
+export function reachedCurriculumWeek(goals: Array<{ id: string; curriculum_week: number | null; status: string }>, resources: Array<{ id: string; goal_id: string; assignee_id?: string | null }>, progress: Array<{ goal_resource_id: string; learner_id: string; status: string }>, learnerId: string): number {
   let best = 0;
   for (const g of goals) {
     if (!g.curriculum_week || g.status === 'dropped') continue;
-    const rs = resources.filter((r) => r.goal_id === g.id);
+    const rs = resources.filter((r) => r.goal_id === g.id && (!r.assignee_id || r.assignee_id === learnerId));
     if (rs.length && rs.every((r) => progress.find((p) => p.goal_resource_id === r.id && p.learner_id === learnerId)?.status === 'completed')) best = Math.max(best, g.curriculum_week);
   }
   return best;

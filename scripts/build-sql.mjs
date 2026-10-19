@@ -9,6 +9,7 @@ do $$ declare r record; begin
   for r in select t.typname from pg_type t join pg_namespace n on n.oid = t.typnamespace where n.nspname = 'public' and t.typtype = 'e' loop execute format('drop type if exists public.%I cascade', r.typname); end loop;
 end $$;
 `;
-w('1_setup.sql', `-- STEP 1 of 3 — tables, security rules (RLS), change log and live sync.\n-- Paste ALL of this into Supabase → SQL Editor → New query → Run.\n-- (If an older version of this app was installed, its tables are cleared first — nothing else is touched.)\n\n${RESET}\n${m('0001_schema.sql')}\n\n${m('0004_rls_policies.sql')}\n\n${m('0005_realtime.sql')}`);
+w('1_setup.sql', `-- STEP 1 of 3 — tables, security rules (RLS), change log and live sync.\n-- Paste ALL of this into Supabase → SQL Editor → New query → Run.\n-- (If an older version of this app was installed, its tables are cleared first — nothing else is touched.)\n\n${RESET}\n${m('0001_schema.sql')}\n\n${m('0004_rls_policies.sql')}\n\n${m('0005_realtime.sql')}\n\n${m('0006_manual_progress_exam_assignee.sql')}`);
 w('2_library_and_curriculum.sql', `-- STEP 2 of 3 — your 121 library files and the proposed 52-week curriculum. Paste → Run.\n\n${m('0002_seed_library.sql')}\n\n${m('0003_seed_curriculum.sql')}`);
+w('4_upgrade_v1_1.sql', `-- UPGRADE (only if you already ran steps 1–3 earlier) — adds: manual % per task, “ready for questions” badge, exam date per week, tasks for one person.\n-- Paste ALL of this into Supabase → SQL Editor → New query → Run. It does NOT delete anything and is safe to run twice.\n\n${m('0006_manual_progress_exam_assignee.sql')}`);
 console.log('sql/ written');

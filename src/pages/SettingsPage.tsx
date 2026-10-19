@@ -11,6 +11,8 @@ import { useRun } from '@/hooks/useRun';
 import { usePlan } from '@/api/queries';
 import { replacePlan, rotateAccessKey, updatePlan, updateProfile } from '@/api/mutations';
 import { Button, ConfirmDialog, Dialog, Field, Input, SectionHeader, Segmented, Textarea } from '@/components/ui/ui';
+import { Page } from '@/components/Page';
+import { useInstall } from '@/pwa';
 import { newKeySchema } from '@/lib/validation';
 import { addDays, formatDay, parseISO, toISO } from '@/lib/domain/dates';
 import type { Plan, ThemePref } from '@/types/db';
@@ -33,8 +35,7 @@ export default function SettingsPage() {
   const p = plan.data;
 
   return (
-    <div className="stack-lg narrow">
-      <h1>Settings</h1>
+    <Page kicker="This device and this account" title="Settings" narrow>
       <section className="panel">
         <SectionHeader title="Profile" />
         <Field label="Display name" htmlFor="st-name"><div className="row"><Input id="st-name" value={name} maxLength={60} onChange={(e) => setName(e.target.value)} />
@@ -74,6 +75,7 @@ export default function SettingsPage() {
         <p className="small muted">You stay signed in on this device until you sign out or the session expires.</p>
       </section>
 
+      <InstallSection />
       <section className="panel">
         <SectionHeader title="About this app" />
         <ul className="small muted bullets">
@@ -89,7 +91,7 @@ export default function SettingsPage() {
         message={p && extendBy ? `The target end moves from ${formatDay(p.target_end_date)} to ${formatDay(toISO(addDays(parseISO(p.target_end_date), extendBy * 7)))}.` : ''}
         onConfirm={() => { if (p && extendBy) void run(() => updatePlan(p.id, { target_end_date: toISO(addDays(parseISO(p.target_end_date), extendBy * 7)) }), { ok: 'Plan extended', invalidate: ['plan'] }).then(() => setExtendBy(null)); }} />
       <PlanDialog mode={planDlg} plan={p ?? null} onClose={() => setPlanDlg(null)} />
-    </div>
+    </Page>
   );
 }
 
@@ -117,5 +119,15 @@ function PlanForm({ mode, plan, onClose }: { mode: 'edit' | 'new'; plan: Plan | 
       {!fresh && <p className="small muted">Changing the start date shifts which plan week each date belongs to; goals keep their own dates.</p>}
       <div className="dialog-actions"><Button onClick={onClose}>Cancel</Button><Button variant="primary" disabled={!!err} onClick={() => void save()}>Save plan</Button></div>
     </div>
+  );
+}
+
+function InstallSection() {
+  const inst = useInstall();
+  return (
+    <section className="panel"><SectionHeader title="Install on your phone" sub="Opens full screen with its own icon and splash screen." />
+      {inst.installed ? <p>✓ You are using the installed app.</p> : inst.canPrompt ? <div><Button variant="primary" onClick={() => void inst.install()}>Install app</Button></div> : (
+        <ol className="how-steps big"><li><b>iPhone / iPad (Safari):</b> Share → “Add to Home Screen”.</li><li><b>Android (Chrome):</b> ⋮ menu → “Install app”.</li><li><b>Computer (Chrome / Edge):</b> the install icon in the address bar.</li></ol>)}
+    </section>
   );
 }

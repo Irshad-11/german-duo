@@ -3,7 +3,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { CalendarClock, Pencil, Trash2 } from 'lucide-react';
-import { Badge, Button, Dialog, Field, Input, Textarea } from '@/components/ui/ui';
+import { Badge, Button, Dialog, Field, FormPage, Input, Textarea } from '@/components/ui/ui';
 import { FolderTag, PersonCell } from '@/components/people';
 import { ChangeList } from '@/components/ChangeList';
 import { useChangeLog, useGoalResources, useGoals, usePostponements, useProgress } from '@/api/queries';
@@ -18,7 +18,7 @@ import type { Goal } from '@/types/db';
 
 export function GoalDialog({ goalId, onClose, onEdit, onOpenResource }: { goalId: string | null; onClose: () => void; onEdit: (g: Goal) => void; onOpenResource: (id: string) => void }) {
   const { data: goals } = useGoals(); const g = goals?.find((x) => x.id === goalId) ?? null;
-  return <Dialog open={!!goalId} onClose={onClose} title={g?.title ?? 'Goal'} wide>{g && <Body g={g} onClose={onClose} onEdit={onEdit} onOpenResource={onOpenResource} />}</Dialog>;
+  return <FormPage open={!!goalId} onClose={onClose} title={g?.title ?? 'Goal'} wide>{g && <Body g={g} onClose={onClose} onEdit={onEdit} onOpenResource={onOpenResource} />}</FormPage>;
 }
 type PF = z.infer<typeof postponeSchema>;
 
@@ -35,6 +35,7 @@ function Body({ g, onClose, onEdit, onOpenResource }: { g: Goal; onClose: () => 
   return (
     <div className="stack">
       <div className="row wrap between"><p className="mono small">{formatDayLong(g.start_date)} → <b>{formatDayLong(g.deadline)}</b>{g.deadline !== g.original_deadline && <> <Badge tone="warn">postponed from {formatDay(g.original_deadline)}</Badge></>}</p>
+        {g.exam_date && <p className="small">Exam session: <b>{formatDayLong(g.exam_date)}</b></p>}
         {g.status === 'dropped' && <Badge>dropped</Badge>}</div>
       {g.description && <p>{g.description}</p>}
       <table className="tbl tbl-compare"><thead><tr><th scope="col">Overall</th>{who.learners.map((l) => <th key={l.id} scope="col"><span className={`txt-${l.accent}`}>{l.code}</span></th>)}</tr></thead>

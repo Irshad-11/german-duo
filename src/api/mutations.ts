@@ -31,7 +31,7 @@ export async function updateCurriculumItem(id: string, patch: Partial<Pick<Curri
 export async function deleteCurriculumItem(id: string) { ok((await supabase.from('curriculum_items').delete().eq('id', id)).error); }
 export async function addCurriculumItem(item: Omit<CurriculumItem, 'id'>) { ok((await supabase.from('curriculum_items').insert(item)).error); }
 
-export type GoalInput = Pick<Goal, 'title' | 'description' | 'start_date' | 'deadline' | 'priority' | 'est_minutes' | 'curriculum_week' | 'plan_id'>;
+export type GoalInput = Pick<Goal, 'title' | 'description' | 'start_date' | 'deadline' | 'priority' | 'est_minutes' | 'curriculum_week' | 'plan_id'> & Partial<Pick<Goal, 'exam_date'>>;
 export type GoalResourceInput = Partial<Omit<GoalResource, 'id' | 'goal_id' | 'version' | 'created_at' | 'updated_at'>> & { title: string };
 export async function createGoal(input: GoalInput, resources: GoalResourceInput[]): Promise<string> {
   const g = await supabase.from('goals').insert(input).select('id').single(); ok(g.error);
@@ -42,7 +42,7 @@ export async function createGoal(input: GoalInput, resources: GoalResourceInput[
   }
   return id;
 }
-export async function updateGoal(id: string, patch: Partial<Pick<Goal, 'title' | 'description' | 'priority' | 'est_minutes' | 'status' | 'start_date'>>) { ok((await supabase.from('goals').update(patch).eq('id', id)).error); }
+export async function updateGoal(id: string, patch: Partial<Pick<Goal, 'title' | 'description' | 'priority' | 'est_minutes' | 'status' | 'start_date' | 'exam_date'>>) { ok((await supabase.from('goals').update(patch).eq('id', id)).error); }
 export async function deleteGoal(id: string) { ok((await supabase.from('goals').delete().eq('id', id)).error); }
 export async function addGoalResource(goalId: string, r: GoalResourceInput, position: number) { ok((await supabase.from('goal_resources').insert({ ...r, goal_id: goalId, position })).error); }
 export async function updateGoalResource(id: string, patch: Partial<GoalResource>) {
@@ -53,7 +53,7 @@ export async function deleteGoalResource(id: string) { ok((await supabase.from('
 export async function reorderGoalResources(order: string[]) { await Promise.all(order.map(async (id, i) => ok((await supabase.from('goal_resources').update({ position: i }).eq('id', id)).error))); }
 
 /** Upserts the signed-in learner's progress row for an assignment. */
-export async function saveProgress(learnerId: string, goalResourceId: string, patch: Partial<Pick<GoalProgress, 'status' | 'current_page' | 'pages_done' | 'measure_done' | 'note'>>): Promise<string> {
+export async function saveProgress(learnerId: string, goalResourceId: string, patch: Partial<Pick<GoalProgress, 'status' | 'current_page' | 'pages_done' | 'measure_done' | 'manual_pct' | 'ready_for_questions' | 'note'>>): Promise<string> {
   const r = await supabase.from('goal_progress').upsert({ goal_resource_id: goalResourceId, learner_id: learnerId, ...patch }, { onConflict: 'goal_resource_id,learner_id' }).select('id').single();
   ok(r.error); return (r.data as { id: string }).id;
 }

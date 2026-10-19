@@ -179,7 +179,7 @@ export function PetDock({ totalMinutes }: { totalMinutes: number }) {
             {top3.length === 0 ? <p className="muted">Everything is calm. Maybe add a word or log ten minutes.</p> : (
               <ul className="plain-list stack-sm">{top3.map((o) => (
                 <li key={o.id} className="pet-todo"><span>{o.text}</span>
-                  {o.materialId ? <Button size="sm" variant="primary" onClick={() => { setMenu(false); nav(`${loc.pathname}?update=${o.materialId}`); }}>Update</Button>
+                  {o.materialId ? <Button size="sm" variant="primary" onClick={() => { setMenu(false); nav(`${loc.pathname}?update=${o.materialId}`, { replace: true }); }}>Update</Button>
                     : o.to ? <Button size="sm" onClick={() => { setMenu(false); nav(o.to!); }}>Go</Button> : null}</li>))}</ul>
             )}
           </section>

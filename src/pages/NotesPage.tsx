@@ -7,6 +7,7 @@ import { useRun } from '@/hooks/useRun';
 import { useWho } from '@/hooks/useWho';
 import { useQuick } from '@/hooks/useQuick';
 import { Avatar, Badge, Button, Chip, Dialog, EmptyState, ErrorState, Field, Input, Segmented, Select, SkeletonCards, Textarea } from '@/components/ui/ui';
+import { Page, TalkTabs } from '@/components/Page';
 import { NOTE_KINDS } from '@/components/dialogs';
 import { timeAgo } from '@/lib/domain/dates';
 import { noteSchema } from '@/lib/validation';
@@ -33,8 +34,8 @@ export default function NotesPage() {
   if (notes.isError) return <ErrorState message={(notes.error as Error).message} onRetry={() => void notes.refetch()} />;
   if (notes.isLoading) return <SkeletonCards />;
   return (
-    <div className="stack-lg">
-      <h1>Notes &amp; questions</h1>
+    <Page kicker="Talk" title="Notes & questions" lead="Write things down once — a word, a rule, a confusing sentence. Questions notify the other person.">
+      <TalkTabs />
       <div className="capture stack-sm">
         <Field label="Quick capture" htmlFor="qc" error={err} hint="A word, a rule, a confusing sentence, a question. Both of us see it."><Textarea id="qc" rows={2} value={text} onChange={(e) => { setText(e.target.value); setErr(null); }} onKeyDown={(e) => { if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') void save(); }} /></Field>
         <div className="row between wrap"><div className="chips" role="group" aria-label="Kind">{NOTE_KINDS.map((k) => <Chip key={k.value} on={qk === k.value} onClick={() => setQk(k.value)}>{k.label}</Chip>)}</div>
@@ -55,7 +56,7 @@ export default function NotesPage() {
               <td><Avatar code={who.codeOf(n.author_id)} accent={who.accentOf(n.author_id)} /></td><td className="small muted">{timeAgo(n.updated_at)}</td></tr>))}</tbody></table></div>
       )}
       <Dialog open={!!current} onClose={() => { setOpenId(null); setSp((p) => { const x = new URLSearchParams(p); x.delete('note'); return x; }, { replace: true }); }} title={current ? KIND_LABEL[current.kind] : ''} wide>{current && <NoteBody key={current.id} note={current} onClose={() => setOpenId(null)} />}</Dialog>
-    </div>
+    </Page>
   );
 }
 

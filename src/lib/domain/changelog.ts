@@ -17,13 +17,15 @@ const FIELD: Record<string, string> = {
   pages_done: 'pages done', measure_done: 'amount done', measure_target: 'target', measure_unit: 'unit', note: 'note', start_page: 'first page', end_page: 'last page',
   external_url: 'link', instructions: 'instructions', german: 'word', article: 'article', plural: 'plural', meaning_en: 'English', meaning_bn: 'Bangla', starred: 'star',
   body: 'text', question_state: 'question state', kind: 'kind', tags: 'tags', topic_tags: 'tags', minutes: 'minutes', label: 'label', level: 'level', is_active: 'active', target_end_date: 'end date',
-  expires_at: 'expires', example_de: 'example', pronunciation: 'pronunciation', position: 'order', source: 'source', category: 'category', role: 'role', week_no: 'week', priority_: 'priority',
+  expires_at: 'expires', example_de: 'example', pronunciation: 'pronunciation', position: 'order', source: 'source', category: 'category', role: 'role', week_no: 'week', priority_: 'priority', manual_pct: 'own %', ready_for_questions: 'ready for questions', exam_date: 'exam date', assignee_id: 'task is for',
 };
 export const fieldLabel = (k: string): string => FIELD[k] ?? k.replace(/_/g, ' ');
 
 export function formatValue(k: string, v: unknown): string {
+  if (k === 'assignee_id') return v ? 'one person' : 'both of us';
   if (v === null || v === undefined || v === '') return '—';
   if (k === 'status' && typeof v === 'string' && v in STATUS_BY_VALUE) return STATUS_BY_VALUE[v as keyof typeof STATUS_BY_VALUE].label;
+  if (k === 'manual_pct') return `${v}%`;
   if (k === 'priority') return ({ 1: 'high', 2: 'normal', 3: 'low' } as Record<number, string>)[Number(v)] ?? String(v);
   if (typeof v === 'boolean') return v ? 'yes' : 'no';
   if (Array.isArray(v)) return v.join(', ') || '—';

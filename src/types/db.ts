@@ -14,16 +14,20 @@ export interface CurriculumItem { id: string; week_no: number; position: number;
 
 export interface Goal {
   id: string; plan_id: string | null; title: string; description: string | null; start_date: string; deadline: string; original_deadline: string; priority: 1 | 2 | 3;
-  est_minutes: number | null; status: 'active' | 'dropped'; curriculum_week: number | null; created_by: string | null; version: number; created_at: string; updated_at: string;
+  est_minutes: number | null; status: 'active' | 'dropped'; curriculum_week: number | null; exam_date: string | null; created_by: string | null; version: number; created_at: string; updated_at: string;
 }
 export type ResourceStatus = 'not_started' | 'ready' | 'opened' | 'reading' | 'paused' | 'continuing' | 'completed' | 'awaiting_review' | 'ready_for_questions' | 'needs_help';
 export interface GoalResource {
   id: string; goal_id: string; resource_id: string | null; title: string; filename: string | null; level: Level | null; category: string | null; source_folder: string | null;
   file_type: string | null; page_count: number | null; start_page: number | null; end_page: number | null; external_url: string | null; instructions: string | null;
-  est_minutes: number | null; measure_unit: string | null; measure_target: number | null; notes: string | null; position: number; version: number; created_at: string; updated_at: string;
+  est_minutes: number | null; measure_unit: string | null; measure_target: number | null; notes: string | null;
+  /** null = a task for both learners; otherwise only this learner does it. */
+  assignee_id: string | null; position: number; version: number; created_at: string; updated_at: string;
 }
 export interface GoalProgress {
-  id: string; goal_resource_id: string; learner_id: string; status: ResourceStatus; current_page: number | null; pages_done: number; measure_done: number; note: string | null;
+  id: string; goal_resource_id: string; learner_id: string; status: ResourceStatus; current_page: number | null; pages_done: number; measure_done: number;
+  /** A percentage set by hand (0–100). null = calculated from pages / amount. */
+  manual_pct: number | null; /** Finished properly and ready to be asked questions about it. */ ready_for_questions: boolean; note: string | null;
   minutes_total: number; last_activity_at: string | null; completed_at: string | null; version: number; created_at: string; updated_at: string;
 }
 export interface StudySession {

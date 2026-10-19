@@ -1,0 +1,8 @@
+{
+  "name": "german-duo-e2e",
+  "private": true,
+  "type": "module",
+  "description": "Optional end-to-end click-through tests (real Chromium, mocked Supabase). Separate from the app so Vercel never installs a browser.",
+  "scripts": { "test": "node run.mjs" },
+  "dependencies": { "@sparticuz/chromium": "^138.0.0", "puppeteer-core": "^24.0.0" }
+}

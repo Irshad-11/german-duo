@@ -8,6 +8,7 @@ import { createAnnouncement, deleteAnnouncement, setAnnouncementRead, updateAnno
 import { useRun } from '@/hooks/useRun';
 import { useWho } from '@/hooks/useWho';
 import { Badge, Button, Dialog, EmptyState, ErrorState, Field, Input, Segmented, SkeletonCards, Textarea } from '@/components/ui/ui';
+import { Page, TalkTabs } from '@/components/Page';
 import { announcementSchema } from '@/lib/validation';
 import { timeAgo } from '@/lib/domain/dates';
 import type { Announcement } from '@/types/db';
@@ -38,10 +39,11 @@ export default function NoticesPage() {
   if (anns.isLoading || !me) return <SkeletonCards n={2} />;
 
   return (
-    <div className="stack-lg">
-      <div className="row between wrap"><h1>Notices</h1><div className="row wrap">
+    <Page kicker="Talk" title="Notices" lead="Short messages both of you should see on Today — a quiz, a reminder, an exam date." actions={<Button variant="primary" icon={<Plus size={16} aria-hidden />} onClick={() => setEditing('new')}>New notice</Button>}>
+      <TalkTabs />
+      <div className="row between wrap"><span /><div className="row wrap">
         <Segmented<'active' | 'all'> label="Which notices" value={showExpired ? 'all' : 'active'} onChange={(v) => setShowExpired(v === 'all')} options={[{ value: 'active', label: 'Active' }, { value: 'all', label: 'Incl. expired' }]} />
-        <Button variant="primary" icon={<Plus size={16} aria-hidden />} onClick={() => setEditing('new')}>New notice</Button></div></div>
+        </div></div>
       {list.length === 0 ? <div><EmptyState icon={<Megaphone size={28} />} title="No notices" action={<Button variant="primary" onClick={() => setEditing('new')}>Post a notice</Button>}>Use notices for things both of you should see on the dashboard — a study session, a reminder, an exam date.</EmptyState></div> : (
         <ul className="plain-list stack">{list.map((a) => {
           const r = readMap.get(a.id); const expired = a.expires_at && new Date(a.expires_at).getTime() <= now; const unread = a.author_id !== me.id && !r;
@@ -58,7 +60,7 @@ export default function NoticesPage() {
         })}</ul>
       )}
       <NoticeDialog target={editing} onClose={() => setEditing(null)} />
-    </div>
+    </Page>
   );
 }
 

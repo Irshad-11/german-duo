@@ -5,6 +5,7 @@ import { markMessagesRead, sendMessage } from '@/api/mutations';
 import { useWho } from '@/hooks/useWho';
 import { useLiveStatus } from '@/hooks/useRealtime';
 import { useQueryClient } from '@tanstack/react-query';
+import { Page, TalkTabs } from '@/components/Page';
 import { Button, EmptyState, ErrorState, SkeletonCards, Textarea } from '@/components/ui/ui';
 import { friendlyError } from '@/lib/errors';
 import { formatDayLong, formatTime, toISO } from '@/lib/domain/dates';
@@ -54,10 +55,12 @@ export default function ChatPage() {
   const retry = (p: Pending) => { setPending((xs) => xs.map((x) => (x.id === p.id ? { ...x, status: 'sending', error: undefined } : x))); void deliver({ ...p, status: 'sending' }); };
 
   if (msgs.isError) return <ErrorState message={(msgs.error as Error).message} onRetry={() => void msgs.refetch()} />;
-  if (msgs.isLoading) return <SkeletonCards n={2} />;
+  if (msgs.isLoading) return <Page title="Chat"><SkeletonCards n={2} /></Page>;
 
   let lastDay = '';
   return (
+    <Page kicker="Talk" title="Chat" lead={`Just the two of you${other ? ` — ${who_(other.display_name)}` : ''}.`}>
+    <TalkTabs />
     <div className="chat">
       <div className="chat-list" ref={listRef} role="log" aria-live="polite" aria-label={`Conversation with ${other?.display_name ?? 'the other learner'}`}>
         {items.length === 0 && <EmptyState title="Say hallo!">Messages stay in the app and sync instantly between your devices.</EmptyState>}
@@ -83,5 +86,8 @@ export default function ChatPage() {
         <Button type="submit" variant="primary" disabled={!text.trim()} aria-label="Send message" icon={<Send size={18} aria-hidden />} />
       </form>
     </div>
+    </Page>
   );
 }
+
+const who_ = (n: string) => `chatting with ${n}`;

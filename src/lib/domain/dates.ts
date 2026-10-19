@@ -41,3 +41,9 @@ export function formatMinutes(min: number): string {
   const h = Math.floor(min / 60); const m = Math.round(min % 60);
   return h ? (m ? `${h} h ${m} min` : `${h} h`) : `${m} min`;
 }
+
+/** Compact form for tight spaces: 0m · 45m · 2h · 2h 05m. */
+export function formatMinutesShort(min: number): string {
+  if (!min || min < 1) return '0m'; const h = Math.floor(min / 60); const m = Math.round(min % 60);
+  return h ? (m ? `${h}h ${String(m).padStart(2, '0')}m` : `${h}h`) : `${m}m`;
+}

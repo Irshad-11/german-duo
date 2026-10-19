@@ -2,14 +2,35 @@
 <html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#F0F4F1" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, interactive-widget=resizes-content" />
+    <meta name="theme-color" content="#4A1B2A" />
     <meta name="color-scheme" content="light dark" />
     <meta name="robots" content="noindex,nofollow" />
+    <meta name="application-name" content="German Duo" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="German Duo" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="manifest" href="/manifest.webmanifest" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1290x2796.png" media="(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1179x2556.png" media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1284x2778.png" media="(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1125x2436.png" media="(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1242x2688.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-828x1792.png" media="(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1242x2208.png" media="(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1668x2388.png" media="(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-2048x2732.png" media="(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/splash/splash-1536x2048.png" media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
     <title>German Duo</title>
     <script>
-      // Apply the saved theme before first paint (avoids a flash). Only a non-sensitive UI preference is stored locally.
+      // Apply the saved theme before first paint (no flash). Only a non-sensitive UI preference is stored locally.
       (function () {
         try {
           var p = localStorage.getItem('gd-theme') || 'system';
@@ -18,9 +39,16 @@
         } catch (e) {}
       })();
     </script>
+    <style>
+      /* shown instantly, before any JavaScript: matches the installed-app splash */
+      html[data-theme='dark'] .boot { background: #1C0D13; color: #F2E8E6; }
+      .boot { min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 10px; background: #4A1B2A; color: #FBF2EE; font: 600 30px Georgia, 'Times New Roman', serif; }
+      .boot i { display: inline-block; width: 26px; height: 26px; border-radius: 50%; background: #36B8BC; } .boot i + i { background: #E8B454; margin-left: -9px; }
+      .boot small { font: italic 16px Georgia, serif; opacity: .6; font-weight: 400; }
+    </style>
   </head>
   <body>
-    <div id="root"><div class="boot" style="min-height:100dvh;display:grid;place-content:center;justify-items:center;gap:8px;font:600 32px Georgia,'Times New Roman',serif;background:#F0F4F1;color:#1E2B25"><span style="font-size:16px;opacity:.6;font-weight:400;font-style:italic">Zusammen lernen.</span>German Duo</div></div>
+    <div id="root"><div class="boot"><span><i></i><i></i></span>German Duo<small>Zusammen lernen</small></div></div>
     <noscript>German Duo needs JavaScript to run.</noscript>
     <script type="module" src="/src/main.tsx"></script>
   </body>

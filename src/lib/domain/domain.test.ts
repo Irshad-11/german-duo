@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { measure, learnerGoalPct, goalState, evenSplit, clampPage } from './progress';
+import { measure, learnerGoalPct, goalState, evenSplit, clampPage, appliesTo, isReadyForQuestions, finishedOrder, goalFinishedOrder } from './progress';
 import { schedule, INITIAL_SRS, isDue } from './srs';
 import { checkResourceUrl } from './links';
 import { planWeekNumber, startOfWeek, toISO, parseISO, isOverdue, formatMinutes, totalPlanWeeks } from './dates';
@@ -10,9 +10,9 @@ import { validatePageRange, wordSchema, newKeySchema, goalSchema } from '../vali
 import type { ChangeEntry, Goal, GoalProgress, GoalResource, StudySession, VocabReviewLog } from '@/types/db';
 
 const R = (o: Partial<GoalResource> = {}): GoalResource => ({ id: 'r1', goal_id: 'g', resource_id: null, title: 't', filename: null, level: 'A1', category: null, source_folder: null, file_type: 'pdf', page_count: 106, start_page: 10, end_page: 19,
-  external_url: null, instructions: null, est_minutes: 60, measure_unit: null, measure_target: null, notes: null, position: 0, version: 1, created_at: '', updated_at: '', ...o });
-const P = (o: Partial<GoalProgress> = {}): GoalProgress => ({ id: 'p', goal_resource_id: 'r1', learner_id: 'a', status: 'reading', current_page: 12, pages_done: 3, measure_done: 0, note: null, minutes_total: 0, last_activity_at: null, completed_at: null, version: 1, created_at: '', updated_at: '', ...o });
-const G = (o: Partial<Goal> = {}): Goal => ({ id: 'g', plan_id: null, title: 'x', description: null, start_date: '2026-10-12', deadline: '2026-10-18', original_deadline: '2026-10-18', priority: 2, est_minutes: null, status: 'active', curriculum_week: null, created_by: null, version: 1, created_at: '', updated_at: '', ...o });
+  external_url: null, instructions: null, est_minutes: 60, measure_unit: null, measure_target: null, notes: null, assignee_id: null, position: 0, version: 1, created_at: '', updated_at: '', ...o });
+const P = (o: Partial<GoalProgress> = {}): GoalProgress => ({ id: 'p', goal_resource_id: 'r1', learner_id: 'a', status: 'reading', current_page: 12, pages_done: 3, measure_done: 0, manual_pct: null, ready_for_questions: false, note: null, minutes_total: 0, last_activity_at: null, completed_at: null, version: 1, created_at: '', updated_at: '', ...o });
+const G = (o: Partial<Goal> = {}): Goal => ({ id: 'g', plan_id: null, title: 'x', description: null, start_date: '2026-10-12', deadline: '2026-10-18', original_deadline: '2026-10-18', priority: 2, est_minutes: null, status: 'active', curriculum_week: null, exam_date: null, created_by: null, version: 1, created_at: '', updated_at: '', ...o });
 
 describe('measurable progress', () => {
   it('uses the assigned page range and never exceeds 100%', () => {
@@ -44,6 +44,45 @@ describe('measurable progress', () => {
     expect(clampPage(200, R())).toBe(19); expect(clampPage(1, R())).toBe(10);
     const parts = evenSplit(1, 106, 4); expect(parts[0][0]).toBe(1); expect(parts.at(-1)![1]).toBe(106);
     for (let i = 1; i < parts.length; i++) expect(parts[i][0]).toBe(parts[i - 1][1] + 1);
+  });
+});
+
+describe('manual percentage, ready-for-questions and one-person tasks', () => {
+  it('a percentage typed in by hand replaces the calculated one, but finishing is always 100%', () => {
+    expect(measure(R(), P({ pages_done: 3, manual_pct: 80 }))).toMatchObject({ pct: 80, manual: true, done: 3, total: 10 });
+    expect(measure(R(), P({ manual_pct: 0, pages_done: 9 })).pct).toBe(0);
+    expect(measure(R(), P({ status: 'completed', manual_pct: 40 }))).toMatchObject({ pct: 100, manual: false });
+    const bare = R({ start_page: null, end_page: null });
+    expect(measure(bare, P({ manual_pct: 55 }))).toMatchObject({ pct: 55, manual: true }); expect(measure(bare, P({ manual_pct: null })).pct).toBeNull();
+    expect(measure(bare, P({ manual_pct: 250 })).pct).toBe(100);
+    const m = R({ start_page: null, end_page: null, measure_target: 20, measure_unit: 'exercises' });
+    expect(measure(m, P({ measure_done: 5, manual_pct: 90 }))).toMatchObject({ pct: 90, done: 5, total: 20 });
+  });
+  it('a hand-set percentage feeds the goal average', () => {
+    const rs = [R({ start_page: null, end_page: null }), R({ id: 'r2', start_page: null, end_page: null })];
+    expect(learnerGoalPct(rs, [P({ manual_pct: 80 }), P({ goal_resource_id: 'r2', manual_pct: 40 })], 'a')).toBe(60);
+  });
+  it('the badge needs the flag (or the old status) and never exists without a learner row', () => {
+    expect(isReadyForQuestions(P({ status: 'completed', ready_for_questions: true }))).toBe(true);
+    expect(isReadyForQuestions(P({ status: 'completed' }))).toBe(false);
+    expect(isReadyForQuestions(P({ status: 'ready_for_questions' }))).toBe(true); expect(isReadyForQuestions(undefined)).toBe(false);
+  });
+  it('a task for one person only counts for that person (progress and “goal done”)', () => {
+    const rs = [R({ assignee_id: 'a' }), R({ id: 'r2' })];
+    expect(appliesTo(rs[0], 'a')).toBe(true); expect(appliesTo(rs[0], 'b')).toBe(false); expect(appliesTo(rs[1], 'b')).toBe(true);
+    const prog = [P({ status: 'completed' }), P({ goal_resource_id: 'r2', status: 'completed' }), P({ id: 'q', learner_id: 'b', goal_resource_id: 'r2', status: 'completed' })];
+    expect(learnerGoalPct(rs, prog, 'b')).toBe(100); expect(learnerGoalPct(rs, [], 'b')).toBe(0);
+    expect(goalState(G(), rs, prog, ['a', 'b'], '2026-10-14')).toBe('done');
+    expect(goalState(G(), rs, prog.slice(1), ['a', 'b'], '2026-10-14')).toBe('active');
+  });
+  it('tells who finished first, per file and for the whole week', () => {
+    const rs = [R(), R({ id: 'r2' })];
+    const prog = [P({ status: 'completed', completed_at: '2026-10-14T10:00:00Z' }), P({ id: 'q', learner_id: 'b', status: 'completed', completed_at: '2026-10-13T09:00:00Z' }),
+      P({ id: 'p2', goal_resource_id: 'r2', status: 'completed', completed_at: '2026-10-15T10:00:00Z' }), P({ id: 'q2', goal_resource_id: 'r2', learner_id: 'b', status: 'reading' })];
+    expect(finishedOrder(rs[0], prog, ['a', 'b']).map((f) => f.learnerId)).toEqual(['b', 'a']);
+    expect(finishedOrder(rs[1], prog, ['a', 'b']).map((f) => f.learnerId)).toEqual(['a']);
+    expect(goalFinishedOrder(rs, prog, ['a', 'b'])).toEqual([{ learnerId: 'a', at: '2026-10-15T10:00:00Z' }]);
+    expect(goalFinishedOrder([], prog, ['a', 'b'])).toEqual([]);
   });
 });
 

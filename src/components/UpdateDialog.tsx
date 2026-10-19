@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Minus, Plus } from 'lucide-react';
 import { Button, Chip, Dialog, Field, Input, Select, Textarea, cx } from '@/components/ui/ui';
-import { FolderTag, MiniBar } from '@/components/people';
+import { FolderTag, MiniBar, OnlyFor } from '@/components/people';
 import { MaterialLinks, PeopleLines } from '@/components/material';
 import { ChangeList } from '@/components/ChangeList';
 import { useChangeLog, useGoalResources, useGoals, useProgress, useSessions } from '@/api/queries';
@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/useToast';
 import { useQueryClient } from '@tanstack/react-query';
 import { friendlyError } from '@/lib/errors';
 import { emitPet } from '@/pet/bus';
-import { assignedPages, measure } from '@/lib/domain/progress';
+import { appliesTo, assignedPages, isReadyForQuestions, measure } from '@/lib/domain/progress';
 import { STATUSES, SIMPLE_LABEL, simpleOf, statusFromSimple, type Simple } from '@/lib/domain/status';
 import { checkResourceUrl } from '@/lib/domain/links';
 import { pageRangeLabel } from '@/lib/domain/folders';
@@ -23,6 +23,7 @@ import type { GoalProgress, GoalResource, ResourceStatus } from '@/types/db';
 const CHOICES: Simple[] = ['not_started', 'studying', 'finished', 'help'];
 const CHOICE_HINT: Record<Simple, string> = { not_started: 'Haven’t begun', studying: 'Working on it', finished: 'All done', help: 'I’m stuck' };
 const MINUTES = [10, 15, 25, 45, 60];
+const PCTS = [0, 25, 50, 75, 90, 100];
 const TIMER_KEY = 'gd-stopwatch';
 
 /** Mounted once in the shell: any page opens it with ?update=<material id>. */
@@ -44,6 +45,8 @@ function Body({ r, onClose }: { r: GoalResource; onClose: () => void }) {
   const pages = assignedPages(r); const start = r.start_page ?? 1; const end = r.end_page ?? 1;
 
   const [status, setStatus] = useState<ResourceStatus>(mine?.status ?? 'not_started'); const [touched, setTouched] = useState(false);
+  const [manual, setManual] = useState<number | null>(mine?.manual_pct ?? null); const [ready, setReady] = useState(isReadyForQuestions(mine));
+  const hasAuto = pages !== null || !!r.measure_target;
   const [page, setPage] = useState<number | null>(mine?.current_page ?? null);
   const [amount, setAmount] = useState<number>(Number(mine?.measure_done ?? 0));
   const [minutes, setMinutes] = useState(0); const [custom, setCustom] = useState(''); const [note, setNote] = useState(mine?.note ?? '');
@@ -53,8 +56,12 @@ function Body({ r, onClose }: { r: GoalResource; onClose: () => void }) {
   useEffect(() => { if (watch === null) return; const t = window.setInterval(() => setTick(Date.now()), 1000); return () => window.clearInterval(t); }, [watch]);
 
   const simple = simpleOf(status);
-  const pctPreview = measure(r, { status, pages_done: page ? page - start + 1 : 0, measure_done: amount }).pct;
-  const setSimple = (s: Simple) => { setTouched(true); setStatus(statusFromSimple(s, status)); if (s === 'finished') { if (pages) setPage(end); if (r.measure_target && !pages) setAmount(r.measure_target); } };
+  const pctPreview = measure(r, { status, pages_done: page ? page - start + 1 : 0, measure_done: amount, manual_pct: manual }).pct;
+  const setSimple = (s: Simple) => { setTouched(true); setStatus(statusFromSimple(s, status)); if (s !== 'finished') setReady(false); if (s === 'finished') { if (pages) setPage(end); if (r.measure_target && !pages) setAmount(r.measure_target); } };
+  function pickPct(v: number | null) {
+    setManual(v);
+    if (v !== null && !touched) setStatus(v >= 100 ? 'completed' : v > 0 && simpleOf(status) === 'not_started' ? 'reading' : status);
+  }
   function bump(n: number) {
     const base = page ?? start - 1; const next = Math.min(end, Math.max(start - 1, base + n)); const v = next < start ? null : next; setPage(v);
     if (!touched) setStatus(v === null ? status : v >= end ? 'completed' : simpleOf(status) === 'studying' ? status : 'reading');
@@ -69,10 +76,10 @@ function Body({ r, onClose }: { r: GoalResource; onClose: () => void }) {
   async function save() {
     setBusy(true);
     try {
-      const patch: Partial<Pick<GoalProgress, 'status' | 'current_page' | 'pages_done' | 'measure_done' | 'note'>> = { status, note: note.trim() || null };
+      const patch: Partial<Pick<GoalProgress, 'status' | 'current_page' | 'pages_done' | 'measure_done' | 'manual_pct' | 'ready_for_questions' | 'note'>> = { status, note: note.trim() || null, manual_pct: manual, ready_for_questions: status === 'completed' && ready };
       if (pages !== null) { patch.current_page = status === 'completed' ? end : page; patch.pages_done = status === 'completed' ? pages : page ? page - start + 1 : 0; }
       if (r.measure_target && pages === null) patch.measure_done = status === 'completed' ? r.measure_target : amount;
-      const changed = mine ? (mine.status !== status || (mine.note ?? null) !== patch.note || (pages !== null && ((mine.current_page ?? null) !== (patch.current_page ?? null) || mine.pages_done !== patch.pages_done)) || (patch.measure_done !== undefined && Number(mine.measure_done) !== patch.measure_done)) : (status !== 'not_started' || !!patch.note || page !== null || amount > 0);
+      const changed = mine ? (mine.status !== status || (mine.note ?? null) !== patch.note || (mine.manual_pct ?? null) !== manual || isReadyForQuestions(mine) !== patch.ready_for_questions || (pages !== null && ((mine.current_page ?? null) !== (patch.current_page ?? null) || mine.pages_done !== patch.pages_done)) || (patch.measure_done !== undefined && Number(mine.measure_done) !== patch.measure_done)) : (status !== 'not_started' || !!patch.note || page !== null || amount > 0 || manual !== null);
       const undo: number[] = []; let pid = mine?.id;
       if (changed) { pid = await saveProgress(me.id, r.id, patch); const a = await latestLogId('goal_progress', pid, 'UPDATE'); const b = await latestLogId('goal_progress', pid, 'INSERT'); const m = Math.max(a ?? 0, b ?? 0); if (m) undo.push(m); }
       if (chosenMinutes > 0) {
@@ -89,9 +96,18 @@ function Body({ r, onClose }: { r: GoalResource; onClose: () => void }) {
     } catch (e) { toast.error(friendlyError(e)); emitPet({ kind: 'error' }); } finally { setBusy(false); }
   }
 
+  if (!appliesTo(r, me.id)) {
+    return (
+      <div className="stack">
+        <p className="note-box">This task is only for <b>{who.nameOf(r.assignee_id)}</b>, so there is nothing for you to record here.</p>
+        <PeopleLines r={r} progress={progress ?? []} learners={who.learners} />
+        <div className="dialog-actions"><Button onClick={onClose}>Close</Button></div>
+      </div>
+    );
+  }
   return (
     <div className="stack">
-      <div className="row between wrap"><FolderTag level={r.level} folder={r.source_folder} category={r.category} /><span className="small muted">{goal ? `${goal.title} · due ${formatDay(goal.deadline)}` : ''}</span></div>
+      <div className="row between wrap"><FolderTag level={r.level} folder={r.source_folder} category={r.category} /><span className="small muted">{goal ? `${goal.title} · due ${formatDay(goal.deadline)}` : ''}{r.assignee_id && <> · <OnlyFor learner={who.learners.find((l) => l.id === r.assignee_id)} /></>}</span></div>
       <p className="small muted">{pageRangeLabel(r.start_page, r.end_page, r.page_count)}{r.est_minutes ? ` · about ${formatMinutes(r.est_minutes)}` : ''}{r.measure_target ? ` · target ${r.measure_target} ${r.measure_unit ?? ''}` : ''}</p>
       {r.instructions && <p className="note-box">{r.instructions}</p>}
       <div><MaterialLinks url={r.external_url} filename={r.filename} title={r.title} folder={r.source_folder} /></div>
@@ -100,13 +116,18 @@ function Body({ r, onClose }: { r: GoalResource; onClose: () => void }) {
         <div className="choices" role="radiogroup" aria-label="Progress">
           {CHOICES.map((c) => <button key={c} role="radio" aria-checked={simple === c} className={cx('choice', `choice-${c}`, simple === c && 'on')} onClick={() => setSimple(c)}><b>{SIMPLE_LABEL[c]}</b><span className="small">{CHOICE_HINT[c]}</span></button>)}
         </div>
+        {simple === 'finished' && (
+          <button type="button" role="switch" aria-checked={ready} className={cx('rq-toggle', ready && 'on')} onClick={() => setReady((v) => !v)}>
+            <span className="rq-box" aria-hidden>{ready ? '✓' : ''}</span>
+            <span><b>Ready for questions</b><span className="small block">I finished this properly — {who.other ? `${who.other.display_name} can` : 'you can'} ask me about it now.</span></span>
+          </button>
+        )}
         <details className="split"><summary>More detailed statuses</summary>
-          <Field label="Exact status" htmlFor="u-st"><Select id="u-st" value={status} onChange={(e) => { setTouched(true); setStatus(e.target.value as ResourceStatus); }}>{STATUSES.map((s) => <option key={s.value} value={s.value}>{s.label} — {s.hint}</option>)}</Select></Field></details>
+          <Field label="Exact status" htmlFor="u-st"><Select id="u-st" value={status} onChange={(e) => { setTouched(true); setStatus(e.target.value as ResourceStatus); }}>{STATUSES.filter((s) => s.value !== 'ready_for_questions' || status === 'ready_for_questions').map((s) => <option key={s.value} value={s.value}>{s.label} — {s.hint}</option>)}</Select></Field></details>
       </section>
 
-      {(pages !== null || (r.measure_target && pages === null)) && (
-        <section className="step" aria-labelledby="u2"><h3 id="u2"><span className="num">2</span> {pages !== null ? 'How far did you get?' : `How many ${r.measure_unit ?? 'units'} are done?`}</h3>
-          {pages !== null ? (
+      <section className="step" aria-labelledby="u2"><h3 id="u2"><span className="num">2</span> {pages !== null ? 'How far did you get?' : r.measure_target ? `How many ${r.measure_unit ?? 'units'} are done?` : 'How much is done?'}</h3>
+          {!hasAuto ? null : pages !== null ? (
             <>
               <div className="stepper" role="group" aria-label="Page reached">
                 <button className="btn" aria-label="One page back" onClick={() => bump(-1)}><Minus size={16} aria-hidden /></button>
@@ -121,11 +142,21 @@ function Body({ r, onClose }: { r: GoalResource; onClose: () => void }) {
               <div className="stepper-val"><b>{amount}</b><span className="small muted">of {r.measure_target} {r.measure_unit}</span></div>
               <button className="btn" aria-label="One more" onClick={() => setAmount((a) => Math.min(r.measure_target ?? a, a + 1))}><Plus size={16} aria-hidden /></button></div>
           )}
-          <div className="row"><MiniBar pct={pctPreview} accent={me.accent} /><span className="small muted">{pctPreview ?? 0}% of this material{page !== null && page >= end && status !== 'completed' ? ' — that’s the last page: choose “Finished”?' : ''}</span></div>
+          <details className="split" open={!hasAuto || manual !== null}><summary>{hasAuto ? (manual !== null ? `Using my own ${manual}% (tap to change)` : 'Or set the % myself') : 'Set the % done'}</summary>
+            <div className="stack-sm">
+              <div className="chips" role="group" aria-label="Percent done">{PCTS.map((v) => <Chip key={v} on={manual === v} onClick={() => pickPct(v)}>{v}%</Chip>)}</div>
+              <div className="row wrap">
+                <input type="range" className="pct-range" aria-label="Percent done" min={0} max={100} step={5} value={manual ?? pctPreview ?? 0} onChange={(e) => pickPct(Number(e.target.value))} />
+                <label className="small row">exactly: <Input aria-label="Exact percent" className="input-sm" type="number" inputMode="numeric" min={0} max={100} value={manual ?? ''} onChange={(e) => pickPct(e.target.value === '' ? null : Math.min(100, Math.max(0, Math.round(Number(e.target.value)))))} /> %</label>
+                {manual !== null && <Button size="sm" variant="ghost" onClick={() => setManual(null)}>{hasAuto ? 'Use pages instead' : 'Clear'}</Button>}
+              </div>
+              {hasAuto && <p className="small muted">Your own % replaces the one counted from {pages !== null ? 'pages' : 'the amount'} until you clear it.</p>}
+            </div>
+          </details>
+          <div className="row"><MiniBar pct={pctPreview} accent={me.accent} /><span className="small muted">{pctPreview ?? 0}% of this material{manual !== null ? ' (set by you)' : ''}{(page !== null && page >= end && status !== 'completed' && manual === null) || (manual === 100 && status !== 'completed') ? ' — that’s everything: choose “Finished”?' : ''}</span></div>
         </section>
-      )}
 
-      <section className="step" aria-labelledby="u3"><h3 id="u3"><span className="num">{pages !== null || r.measure_target ? 3 : 2}</span> How long did you study just now? <span className="muted small">(optional)</span></h3>
+      <section className="step" aria-labelledby="u3"><h3 id="u3"><span className="num">3</span> How long did you study just now? <span className="muted small">(optional)</span></h3>
         <div className="chips" role="group" aria-label="Minutes">
           <Chip on={minutes === 0 && custom === ''} onClick={() => { setMinutes(0); setCustom(''); setWatchStart(null); }}>None</Chip>
           {MINUTES.map((m) => <Chip key={m} on={minutes === m && custom === ''} onClick={() => { setMinutes(m); setCustom(''); setWatchStart(null); }}>{m} min</Chip>)}

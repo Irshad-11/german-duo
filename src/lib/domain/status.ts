@@ -11,7 +11,7 @@ export const STATUSES: StatusMeta[] = [
   { value: 'paused', label: 'Paused', hint: 'Stopped for now', tone: 'warn' },
   { value: 'continuing', label: 'Continuing', hint: 'Resuming from the saved page', tone: 'active' },
   { value: 'awaiting_review', label: 'Awaiting review', hint: 'Done, needs a second look', tone: 'info' },
-  { value: 'ready_for_questions', label: 'Ready for questions', hint: 'Ask me anything about this', tone: 'info' },
+  { value: 'ready_for_questions', label: 'Ready for questions (old)', hint: 'Older status — now a badge on “Finished”', tone: 'info' },
   { value: 'needs_help', label: 'Needs help', hint: 'Stuck — please help', tone: 'help' },
   { value: 'completed', label: 'Completed', hint: 'Finished', tone: 'done' },
 ];
@@ -29,7 +29,7 @@ export function quickActions(status: ResourceStatus): ResourceStatus[] {
     case 'opened': return ['reading', 'paused'];
     case 'reading': case 'continuing': return ['paused', 'awaiting_review', 'completed'];
     case 'paused': return ['continuing', 'needs_help'];
-    case 'awaiting_review': return ['ready_for_questions', 'completed', 'continuing'];
+    case 'awaiting_review': return ['completed', 'continuing'];
     case 'ready_for_questions': return ['completed', 'continuing'];
     case 'needs_help': return ['continuing', 'completed'];
     case 'completed': return [];

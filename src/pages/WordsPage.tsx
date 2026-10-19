@@ -1,73 +1,118 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pencil, Plus, Search, Star, Trash2 } from 'lucide-react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { Pencil, Search, Star, Trash2, Volume2 } from 'lucide-react';
 import { useVocab, useVocabLog, useVocabState } from '@/api/queries';
-import { deleteWord, reviewWord, updateWord } from '@/api/mutations';
+import { addWord, deleteWord, reviewWord, updateWord } from '@/api/mutations';
 import { useRun } from '@/hooks/useRun';
 import { useWho } from '@/hooks/useWho';
-import { Avatar, Badge, Button, Chip, EmptyState, ErrorState, Input, Segmented, Select, SkeletonCards, Tabs } from '@/components/ui/ui';
+import { Avatar, Button, Chip, EmptyState, ErrorState, Field, Input, Segmented, Select, SkeletonCards, Tabs } from '@/components/ui/ui';
+import { Page } from '@/components/Page';
 import { WordDialog, wordTypeLabel } from '@/components/dialogs';
 import { INITIAL_SRS, RATING_LABEL, isDue, previewInterval } from '@/lib/domain/srs';
 import { reviewsThisWeek } from '@/lib/domain/stats';
+import { canSpeak, speak } from '@/lib/speech';
+import { normalizeGerman, parseQuickWord, splitMeaning } from '@/lib/quickword';
 import { WORD_TYPES } from '@/lib/validation';
 import type { Rating, VocabReviewState, VocabWord, WordType } from '@/types/db';
 
-type Tab = 'list' | 'review';
-type Sort = 'new' | 'az';
+type Tab = 'cards' | 'review';
 
 export default function WordsPage() {
   const who = useWho(); const run = useRun(); const me = who.me;
   const vocab = useVocab(); const state = useVocabState(); const log = useVocabLog();
-  const [tab, setTab] = useState<Tab>('list'); const [q, setQ] = useState(''); const [type, setType] = useState<WordType | ''>(''); const [level, setLevel] = useState(''); const [tag, setTag] = useState('');
-  const [starred, setStarred] = useState(false); const [sort, setSort] = useState<Sort>('new'); const [editing, setEditing] = useState<VocabWord | 'new' | null>(null);
-  const stateOf = useMemo(() => { const m = new Map<string, VocabReviewState>(); for (const s of state.data ?? []) m.set(`${s.learner_id}:${s.word_id}`, s); return m; }, [state.data]);
-  const tags = useMemo(() => { const c = new Map<string, number>(); for (const w of vocab.data ?? []) for (const t of w.topic_tags) c.set(t, (c.get(t) ?? 0) + 1); return [...c.entries()].sort((a, b) => b[1] - a[1]).slice(0, 14).map(([t]) => t); }, [vocab.data]);
-  const list = useMemo(() => {
-    const n = q.trim().toLowerCase();
-    const out = (vocab.data ?? []).filter((w) => (!type || w.word_type === type) && (!level || w.level === level) && (!tag || w.topic_tags.includes(tag)) && (!starred || w.starred) && (!n || [w.german, w.meaning_en, w.meaning_bn, w.example_de, w.plural, ...w.topic_tags].some((x) => x?.toLowerCase().includes(n))));
-    if (sort === 'az') out.sort((a, b) => a.german.localeCompare(b.german, 'de')); return out;
-  }, [vocab.data, q, type, level, tag, starred, sort]);
+  const [tab, setTab] = useState<Tab>('cards'); const [q, setQ] = useState(''); const [type, setType] = useState<WordType | ''>(''); const [level, setLevel] = useState(''); const [tag, setTag] = useState(''); const [starred, setStarred] = useState(false);
+  const [editing, setEditing] = useState<VocabWord | null>(null); const [more, setMore] = useState<string | null>(null);
+  const stateOf = useMemo(() => { const m = new Map<string, VocabReviewState>(); for (const x of state.data ?? []) m.set(`${x.learner_id}:${x.word_id}`, x); return m; }, [state.data]);
+  const tags = useMemo(() => { const c = new Map<string, number>(); for (const w of vocab.data ?? []) for (const t of w.topic_tags) c.set(t, (c.get(t) ?? 0) + 1); return [...c.entries()].sort((a, b) => b[1] - a[1]).slice(0, 12).map(([t]) => t); }, [vocab.data]);
+  const list = useMemo(() => { const n = q.trim().toLowerCase();
+    return (vocab.data ?? []).filter((w) => (!type || w.word_type === type) && (!level || w.level === level) && (!tag || w.topic_tags.includes(tag)) && (!starred || w.starred) && (!n || [w.german, w.meaning_en, w.meaning_bn, w.example_de, w.plural, ...w.topic_tags].some((x) => x?.toLowerCase().includes(n)))); }, [vocab.data, q, type, level, tag, starred]);
   const dueFor = (id: string) => (vocab.data ?? []).filter((w) => { const s = stateOf.get(`${id}:${w.id}`); return s && isDue(s.due_at); }).length;
-
   if (vocab.isError) return <ErrorState message={(vocab.error as Error).message} onRetry={() => void vocab.refetch()} />;
-  if (vocab.isLoading || !me) return <SkeletonCards n={3} />;
-  const cell = (id: string, w: VocabWord) => { const s = stateOf.get(`${id}:${w.id}`); return !s ? <span className="muted">new</span> : isDue(s.due_at) ? <Badge tone="info">due</Badge> : <span className="mono small">{s.interval_days}d</span>; };
+  if (vocab.isLoading || !me) return <Page title="Words"><SkeletonCards n={3} /></Page>;
+  const total = vocab.data?.length ?? 0;
 
   return (
-    <div className="stack-lg">
-      <div className="row between wrap"><h1>Words</h1><Button variant="primary" icon={<Plus size={15} aria-hidden />} onClick={() => setEditing('new')}>Add word</Button></div>
-      <p className="muted small mono">{vocab.data?.length ?? 0} words · {who.learners.map((l) => `${l.code}: ${dueFor(l.id)} due, ${reviewsThisWeek(log.data ?? [], l.id)} reviewed this week`).join('  |  ')}</p>
-      <Tabs<Tab> label="Words" value={tab} onChange={setTab} tabs={[{ value: 'list', label: 'List' }, { value: 'review', label: 'Review' }]} />
-
-      {tab === 'list' && (<>
-        <div className="stack-sm">
-          <div className="search"><Search size={15} aria-hidden /><Input aria-label="Search words" placeholder="Search German, English, বাংলা, tags" value={q} onChange={(e) => setQ(e.target.value)} /></div>
+    <Page kicker="Shared vocabulary" title="Words" lead={`${total} word${total === 1 ? '' : 's'} · ${who.learners.map((l) => `${l.display_name}: ${dueFor(l.id)} due, ${reviewsThisWeek(log.data ?? [], l.id)} reviewed this week`).join('  ·  ')}`}>
+      <QuickAdd existing={vocab.data ?? []} onMore={(seed) => setMore(seed)} />
+      <Tabs<Tab> label="Words" value={tab} onChange={setTab} tabs={[{ value: 'cards', label: 'Flashcards' }, { value: 'review', label: 'Practice' }]} />
+      {tab === 'cards' && (<>
+        <div className="filters">
+          <div className="search"><Search size={15} aria-hidden /><Input aria-label="Search words" placeholder="Search German, English, বাংলা…" value={q} onChange={(e) => setQ(e.target.value)} /></div>
           <div className="row wrap">
             <Select aria-label="Type" value={type} onChange={(e) => setType(e.target.value as WordType | '')}><option value="">All types</option>{WORD_TYPES.map((t) => <option key={t} value={t}>{wordTypeLabel(t)}</option>)}</Select>
             <Select aria-label="Level" value={level} onChange={(e) => setLevel(e.target.value)}><option value="">All levels</option>{['A1', 'A2', 'B1', 'B2'].map((l) => <option key={l}>{l}</option>)}</Select>
-            <Select aria-label="Sort" value={sort} onChange={(e) => setSort(e.target.value as Sort)}><option value="new">Newest</option><option value="az">A–Z</option></Select>
-            <Chip on={starred} onClick={() => setStarred((v) => !v)}><Star size={12} aria-hidden /> Starred</Chip></div>
-          {tags.length > 0 && <div className="chips" role="group" aria-label="Topics">{tags.map((t) => <Chip key={t} on={tag === t} onClick={() => setTag(tag === t ? '' : t)}>#{t}</Chip>)}</div>}
+            <Chip on={starred} onClick={() => setStarred((v) => !v)}><Star size={12} aria-hidden /> Starred</Chip>
+            {tags.map((t) => <Chip key={t} on={tag === t} onClick={() => setTag(tag === t ? '' : t)}>#{t}</Chip>)}</div>
         </div>
-        {(vocab.data ?? []).length === 0 ? <EmptyState title="No words yet" action={<Button variant="primary" onClick={() => setEditing('new')}>Add the first word</Button>}>Words added here are visible to both of you at once. For nouns add the article and plural.</EmptyState>
+        {total === 0 ? <EmptyState title="No words yet">Type your first word above — just the word and its meaning is enough. Everything else is optional.</EmptyState>
           : list.length === 0 ? <EmptyState title="No words match">Clear a filter.</EmptyState> : (
-          <div className="sheet-wrap"><table className="tbl tbl-words"><thead><tr><th scope="col" className="sticky-col">German</th><th scope="col">English</th><th scope="col">বাংলা</th><th scope="col">Type</th>{who.learners.map((l) => <th key={l.id} scope="col"><span className={`txt-${l.accent}`}>{l.code}</span></th>)}<th scope="col"><span className="sr-only">Actions</span></th></tr></thead>
-            <tbody>{list.map((w) => (
-              <tr key={w.id}>
-                <th scope="row" className="sticky-col" lang="de"><span className={w.article ? `art art-${w.article}` : ''}>{w.article}</span> <b>{w.german}</b>{w.plural && <span className="muted small"> · {w.plural}</span>}
-                  {w.example_de && <span className="small muted block">{w.example_de}</span>}{w.note && <span className="small block">✎ {w.note}</span>}</th>
-                <td lang="en">{w.meaning_en}{!w.translation_verified && <span className="small muted block">unverified</span>}</td><td lang="bn" className="bn">{w.meaning_bn}</td>
-                <td className="small">{wordTypeLabel(w.word_type)}{w.level ? ` · ${w.level}` : ''}{w.pronunciation && <span className="block muted">/{w.pronunciation}/ {w.pronunciation_verified ? '✓' : '(unverified)'}</span>}</td>
-                {who.learners.map((l) => <td key={l.id}>{cell(l.id, w)}</td>)}
-                <td><div className="row">
-                  <button className={`icon-btn icon-btn-sm ${w.starred ? 'on' : ''}`} aria-pressed={w.starred} aria-label={w.starred ? `Unstar ${w.german}` : `Star ${w.german}`} onClick={() => void run(() => updateWord(w.id, { starred: !w.starred }), { invalidate: ['vocab', 'change_log'] })}><Star size={16} aria-hidden fill={w.starred ? 'currentColor' : 'none'} /></button>
-                  <button className="icon-btn icon-btn-sm" aria-label={`Edit ${w.german}`} onClick={() => setEditing(w)}><Pencil size={15} aria-hidden /></button>
-                  <button className="icon-btn icon-btn-sm" aria-label={`Delete ${w.german}`} onClick={() => void run(() => deleteWord(w.id), { ok: 'Word deleted', invalidate: ['vocab', 'vocab_state', 'change_log'], undo: { table: 'vocab_words', op: 'DELETE', rowId: w.id } })}><Trash2 size={15} aria-hidden /></button></div></td>
-              </tr>))}</tbody></table></div>
-        )}
+          <ul className="fgrid plain-list" aria-label="Flashcards">{list.map((w) => <li key={w.id}><FlashCard w={w} learners={who.learners} stateOf={stateOf}
+            onStar={() => void run(() => updateWord(w.id, { starred: !w.starred }), { invalidate: ['vocab', 'change_log'] })} onEdit={() => setEditing(w)}
+            onDelete={() => void run(() => deleteWord(w.id), { ok: 'Word deleted', invalidate: ['vocab', 'vocab_state', 'change_log'], undo: { table: 'vocab_words', op: 'DELETE', rowId: w.id } })} /></li>)}</ul>)}
       </>)}
       {tab === 'review' && <Review words={vocab.data ?? []} stateOf={stateOf} />}
-      <WordDialog key={editing === 'new' ? 'new' : editing?.id ?? 'none'} open={!!editing} word={editing === 'new' ? null : editing} onClose={() => setEditing(null)} />
-    </div>
+      <WordDialog key={editing?.id ?? more ?? 'none'} open={!!editing || more !== null} word={editing} seed={more ?? undefined} onClose={() => { setEditing(null); setMore(null); }} />
+      <p className="small muted"><Link to="/library">Books and files live in Library.</Link></p>
+    </Page>
+  );
+}
+
+/** One line, five small boxes, Enter to save and keep going: the fast way to build a shared word list. */
+function QuickAdd({ existing, onMore }: { existing: VocabWord[]; onMore: (seed: string) => void }) {
+  const run = useRun();
+  const [de, setDe] = useState(''); const [mean, setMean] = useState(''); const [ex, setEx] = useState(''); const [exm, setExm] = useState(''); const [say, setSay] = useState('');
+  const first = useRef<HTMLInputElement>(null);
+  const parsed = parseQuickWord(de); const dup = parsed.german ? existing.find((w) => normalizeGerman(w.german) === normalizeGerman(parsed.german) && (w.article ?? '') === (parsed.article ?? '')) : null;
+  const ready = parsed.german.length > 0 && mean.trim().length > 0 && !dup;
+  async function add() {
+    if (!ready) return;
+    const m = splitMeaning(mean); const sm = splitMeaning(exm);
+    const res = await run(() => addWord({ german: parsed.german, word_type: parsed.article ? 'noun' : 'other', article: parsed.article, plural: null, details: {}, meaning_en: m.en, meaning_bn: m.bn, pronunciation: say.trim() || null,
+      pronunciation_verified: false, translation_verified: false, example_de: ex.trim() || null, example_en: sm.en, example_bn: sm.bn, topic_tags: [], level: null, source: null, starred: false, note: null }),
+      { ok: `Added “${parsed.article ? parsed.article + ' ' : ''}${parsed.german}”`, invalidate: ['vocab', 'change_log'], undo: { table: 'vocab_words', op: 'INSERT', fromResult: (id: string) => id } });
+    if (res.ok) { setDe(''); setMean(''); setEx(''); setExm(''); setSay(''); first.current?.focus(); }
+  }
+  const enter = (e: React.KeyboardEvent) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); void add(); } };
+  return (
+    <section className="quickadd" aria-labelledby="qa-h">
+      <h2 id="qa-h">Add a word <span className="muted small">— quick, one line</span></h2>
+      <div className="qa-grid" onKeyDown={enter}>
+        <Field label="German" htmlFor="qa-de" hint="with der / die / das for nouns" error={dup ? `Already in the list: ${dup.article ?? ''} ${dup.german}` : null}><Input id="qa-de" ref={first} lang="de" autoComplete="off" autoCapitalize="none" placeholder="die Reise" value={de} onChange={(e) => setDe(e.target.value)} /></Field>
+        <Field label="Meaning" htmlFor="qa-m" hint="English or বাংলা"><Input id="qa-m" autoComplete="off" placeholder="journey / ভ্রমণ" value={mean} onChange={(e) => setMean(e.target.value)} /></Field>
+        <Field label="Example sentence" htmlFor="qa-ex"><Input id="qa-ex" lang="de" autoComplete="off" placeholder="Gute Reise!" value={ex} onChange={(e) => setEx(e.target.value)} /></Field>
+        <Field label="Sentence meaning" htmlFor="qa-exm"><Input id="qa-exm" autoComplete="off" placeholder="Have a good trip!" value={exm} onChange={(e) => setExm(e.target.value)} /></Field>
+        <Field label="How it sounds" htmlFor="qa-say" hint="optional, e.g. RYE-zuh"><Input id="qa-say" autoComplete="off" placeholder="RYE-zuh" value={say} onChange={(e) => setSay(e.target.value)} /></Field>
+        <div className="qa-actions"><Button variant="primary" disabled={!ready} onClick={() => void add()}>Add word</Button><button className="linklike small" onClick={() => onMore(parsed.german)}>More details…</button></div>
+      </div>
+      <p className="small muted">Only the German word and its meaning are needed. Press Enter in any box to add and start the next one.</p>
+    </section>
+  );
+}
+
+function FlashCard({ w, learners, stateOf, onStar, onEdit, onDelete }: { w: VocabWord; learners: ReturnType<typeof useWho>['learners']; stateOf: Map<string, VocabReviewState>; onStar: () => void; onEdit: () => void; onDelete: () => void }) {
+  const [back, setBack] = useState(false); const sound = canSpeak();
+  return (
+    <article className={`fcard ${back ? 'fcard-back' : ''}`}>
+      <button className="fcard-face" onClick={() => setBack((b) => !b)} aria-pressed={back} aria-label={`${w.german}. ${back ? 'Showing meaning' : 'Showing the German word'}. Tap to flip.`}>
+        {!back ? (
+          <span className="fcard-front" lang="de"><span className="fcard-top">{w.article ? <span className={`art art-${w.article}`}>{w.article}</span> : <span className="art art-none">{wordTypeLabel(w.word_type).toLowerCase()}</span>}{w.level && <span className="small muted">{w.level}</span>}</span>
+            <span className="fcard-word">{w.german}</span>{w.plural && <span className="small muted">plural: {w.plural}</span>}{w.pronunciation && <span className="fcard-say">/{w.pronunciation}/</span>}<span className="fcard-hint">tap to see the meaning</span></span>
+        ) : (
+          <span className="fcard-rear"><span className="fcard-mean">{w.meaning_en && <span lang="en">{w.meaning_en}</span>}{w.meaning_bn && <span lang="bn" className="bn">{w.meaning_bn}</span>}</span>
+            {w.example_de && <span className="fcard-ex"><span lang="de">{w.example_de}</span>{w.example_en && <span lang="en" className="muted">{w.example_en}</span>}{w.example_bn && <span lang="bn" className="bn muted">{w.example_bn}</span>}</span>}
+            {w.note && <span className="small">✎ {w.note}</span>}{!w.translation_verified && <span className="small muted">meaning not double-checked yet</span>}</span>
+        )}
+      </button>
+      <div className="fcard-foot">
+        <span className="fcard-who">{learners.map((l) => { const s = stateOf.get(`${l.id}:${w.id}`); return <span key={l.id} title={`${l.display_name}: ${!s ? 'not practised yet' : isDue(s.due_at) ? 'due for review' : `next review in ${s.interval_days} d`}`}><Avatar code={l.code} accent={l.accent} size={12} /><span className="small muted">{!s ? 'new' : isDue(s.due_at) ? 'due' : `${s.interval_days}d`}</span></span>; })}</span>
+        <span className="row">
+          {sound && <button className="icon-btn icon-btn-sm" aria-label={`Hear ${w.german}`} onClick={() => speak(w.article ? `${w.article} ${w.german}` : w.german)}><Volume2 size={16} aria-hidden /></button>}
+          {sound && w.example_de && <button className="icon-btn icon-btn-sm sentence-btn" aria-label={`Hear the example sentence for ${w.german}`} onClick={() => speak(w.example_de!)}><Volume2 size={13} aria-hidden /><span className="small">sentence</span></button>}
+          <button className={`icon-btn icon-btn-sm ${w.starred ? 'on' : ''}`} aria-pressed={w.starred} aria-label={w.starred ? `Unstar ${w.german}` : `Star ${w.german}`} onClick={onStar}><Star size={16} aria-hidden fill={w.starred ? 'currentColor' : 'none'} /></button>
+          <button className="icon-btn icon-btn-sm" aria-label={`Edit ${w.german}`} onClick={onEdit}><Pencil size={15} aria-hidden /></button>
+          <button className="icon-btn icon-btn-sm" aria-label={`Delete ${w.german}`} onClick={onDelete}><Trash2 size={15} aria-hidden /></button></span>
+      </div>
+    </article>
   );
 }
 

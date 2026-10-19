@@ -282,3 +282,15 @@ kbd { font: .75rem ui-monospace, monospace; background: var(--tint); border-radi
 .wk-facts dt { font-size: .86rem; font-weight: 600; color: var(--muted); } .wk-facts dd { margin: 2px 0 0; font-weight: 600; } .wk-facts label { cursor: pointer; }
 .wk-bars, .wk-order, .wk-ready { display: grid; gap: 3px; } .input-date { width: auto; min-width: 150px; }
 .tbl-week { min-width: 860px; } .tbl-week .pcell { min-width: 140px; }
+
+/* ---------- v1.2: word cards — edit / star / delete / hear buttons never overlap or overflow ---------- */
+.fgrid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 280px), 1fr)); }
+.fcard { min-width: 0; overflow: hidden; }
+.fcard-face { min-width: 0; overflow-wrap: anywhere; }
+.fcard-front, .fcard-rear, .fcard-mean, .fcard-ex { min-width: 0; max-width: 100%; }
+.fcard-foot { flex-wrap: wrap; align-items: center; gap: 2px 10px; padding: 6px 8px 6px 14px; }
+.fcard-who { flex: 1 1 auto; min-width: 0; flex-wrap: wrap; gap: 2px 10px; }
+.fcard-foot > .row { flex: 0 1 auto; flex-wrap: wrap; justify-content: flex-end; gap: 2px; margin-left: auto; }
+.fcard-foot .icon-btn { flex: none; }
+.fcard-foot .sentence-btn { width: auto; padding: 0 8px; }
+.fcard-foot .sentence-btn { display: inline-flex; align-items: center; gap: 4px; white-space: nowrap; }
